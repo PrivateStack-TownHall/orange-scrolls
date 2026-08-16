@@ -11,7 +11,7 @@
             6
          ],
          "excerpt": "Learn how to optimize React applications for better performance.",
-         "content": "<h1>React Performance Guide</h1><p>React apps can slow down when components re-render unnecessarily.</p>",
+         "content": "<h1>React Performance Guide</h1><p><span class=\"lead\">React apps can slow down when components re-render unnecessarily.</span> Understanding <em>why</em> re-renders happen is the first step toward building fast, responsive interfaces.</p><h2>1. Memoize Expensive Calculations</h2><p>Use <code>useMemo</code> to cache the result of expensive computations so they only re-run when their dependencies change.</p><h3>When to reach for it</h3><p>Only apply this when a profiler actually shows a bottleneck, since premature memoization adds complexity without benefit.</p><h2>2. Stabilize Callback References</h2><p>Wrap event handlers passed to child components with <code>useCallback</code> to prevent unnecessary child re-renders.</p><h3>Common pitfall</h3><p>Forgetting to include all dependencies in the array can cause <strong>stale closures</strong>, which are harder to debug than the re-renders you were trying to avoid.</p><h2>3. Split Components Wisely</h2><p>Break large components into smaller ones so React can skip re-rendering parts of the tree that have not changed. Combine this with <code>React.memo</code> for pure presentational components.</p><h2>4. Virtualize Long Lists</h2><p>For lists with hundreds or thousands of items, use a windowing library so only the visible rows are mounted to the DOM.</p><h2>5. Code-Split with Lazy Loading</h2><p>Use <code>React.lazy</code> and dynamic imports to split your bundle, so users only download what the current page needs.</p><h3>Conclusion</h3><p>Performance work is about <em>measuring first</em>, then applying the right technique where it actually matters.</p>",
          "thumbnail": "https://picsum.photos/400/250?1",
          "coverImage": "https://picsum.photos/800/400?11",
          "author": "Vincent Guizot",
@@ -36,7 +36,7 @@
             1
          ],
          "excerpt": "Redux Toolkit simplifies Redux development significantly.",
-         "content": "<h1>Understanding Redux Toolkit</h1>",
+         "content": "<h1>Understanding Redux Toolkit</h1><p><span class=\"lead\">Redux Toolkit (RTK)</span> is the official, opinionated way to write Redux logic, removing much of the boilerplate that made plain Redux tedious.</p><h2>createSlice</h2><p>Instead of writing separate action types, action creators, and reducers by hand, <code>createSlice</code> lets you define state and reducer logic together.</p><h3>Under the hood</h3><p>It uses <strong>Immer</strong> internally, so you can write code that looks like it mutates state directly while staying fully immutable.</p><h2>configureStore</h2><p>RTK's <code>configureStore</code> sets up the Redux DevTools extension and useful middleware like <code>redux-thunk</code> automatically.</p><h2>RTK Query</h2><p>For data fetching, RTK Query provides hooks that handle caching, loading states, and re-fetching, removing the need for separate libraries in many projects.</p><h3>Why it matters</h3><p>By reducing boilerplate and enforcing best practices, Redux Toolkit makes state management more approachable for teams of any size.</p>",
          "thumbnail": "https://picsum.photos/400/250?2",
          "coverImage": "https://picsum.photos/800/400?12",
          "author": "Vincent Guizot",
@@ -61,7 +61,7 @@
             2
          ],
          "excerpt": "Why TypeScript makes JavaScript development safer.",
-         "content": "<h1>TypeScript Guide</h1>",
+         "content": "<h1>Beginner Guide to TypeScript</h1><p><span class=\"lead\">TypeScript is a superset of JavaScript</span> that adds static typing, compiling down to plain JavaScript so it runs anywhere JavaScript does.</p><h2>Why Use TypeScript?</h2><p>Static types catch a whole class of bugs, like passing the wrong type to a function, <strong>before your code ever runs</strong>.</p><h3>Editor benefits</h3><p>Your editor can also provide much richer autocomplete and inline documentation once types are in place.</p><h2>Basic Types</h2><p>TypeScript supports primitives like <code>string</code>, <code>number</code>, and <code>boolean</code>, plus advanced constructs like interfaces, unions, and generics.</p><h2>Interfaces</h2><p>Interfaces let you define the shape of an object, making it clear what properties a function expects and returns.</p><h3>Getting Started</h3><p>You can add TypeScript to an existing project <em>incrementally</em>, renaming files from <code>.js</code> to <code>.ts</code> one at a time.</p>",
          "thumbnail": "https://picsum.photos/400/250?3",
          "coverImage": "https://picsum.photos/800/400?13",
          "author": "Vincent Guizot",
@@ -85,7 +85,7 @@
             7
          ],
          "excerpt": "Best practices when designing scalable Node.js systems.",
-         "content": "<h1>Node Architecture</h1>",
+         "content": "<h1>Node.js Architecture Tips</h1><p><span class=\"lead\">As a Node.js application grows</span>, a clear architecture becomes essential for keeping the codebase maintainable and testable.</p><h2>Layered Structure</h2><p>Separate your code into layers: controllers handle HTTP requests, services contain business logic, and repositories handle data access.</p><h3>Why layers help</h3><p>This separation makes each piece <em>easier to test in isolation</em> and easier to reason about individually.</p><h2>Dependency Injection</h2><p>Avoid tightly coupling modules together. Passing dependencies explicitly makes it easier to swap implementations and write unit tests with mocks.</p><h2>Centralized Error Handling</h2><p>Use a single error-handling middleware to catch and format errors consistently, instead of scattering try/catch blocks everywhere.</p><h3>Configuration</h3><p>Keep configuration in environment variables and <strong>validate them at startup</strong> so misconfiguration fails fast.</p><h2>Horizontal Scalability</h2><p>Design services to be stateless wherever possible so you can run multiple instances behind a load balancer.</p>",
          "thumbnail": "https://picsum.photos/400/250?4",
          "coverImage": "https://picsum.photos/800/400?14",
          "author": "Vincent Guizot",
@@ -109,7 +109,7 @@
             8
          ],
          "excerpt": "Containerize your Node.js applications easily.",
-         "content": "<h1>Docker Deployment</h1>",
+         "content": "<h1>Deploy Node Apps with Docker</h1><p><span class=\"lead\">Docker lets you package a Node.js application</span> together with its dependencies and runtime, so it behaves the same everywhere.</p><h2>Writing a Dockerfile</h2><p>A basic Dockerfile starts from an official <code>node</code> base image, copies your <code>package.json</code>, installs dependencies, and defines the start command.</p><h3>Multi-stage builds</h3><p>Compile or install dev dependencies in one stage, then copy only the production artifacts into a slim final image, keeping the deployed image <strong>small and secure</strong>.</p><h2>docker-compose for Local Development</h2><p>A <code>docker-compose.yml</code> file makes it easy to spin up your app alongside supporting services like a database, with a single command.</p><h2>Best Practices</h2><p>Use a <code>.dockerignore</code> file to exclude <code>node_modules</code>, run your app as a <em>non-root user</em>, and pin base image versions for reproducible builds.</p>",
          "thumbnail": "https://picsum.photos/400/250?5",
          "coverImage": "https://picsum.photos/800/400?15",
          "author": "Vincent Guizot",
@@ -133,7 +133,7 @@
             9
          ],
          "excerpt": "Create scalable REST APIs using Express.js.",
-         "content": "<h1>Express API</h1>",
+         "content": "<h1>Building REST API with Express</h1><p><span class=\"lead\">Express is a minimal and flexible Node.js web framework</span> that makes it straightforward to build REST APIs.</p><h2>Setting Up Routes</h2><p>Define routes for each resource using HTTP verbs like <code>GET</code>, <code>POST</code>, <code>PUT</code>, and <code>DELETE</code>.</p><h3>Route handlers</h3><p>Each verb maps to a handler function that reads or modifies your data and sends back a response.</p><h2>Middleware</h2><p>Middleware functions let you handle cross-cutting concerns such as logging, authentication, and request validation in a <em>reusable</em> way.</p><h2>Error Handling</h2><p>Express supports dedicated error-handling middleware, letting you centralize how errors are logged and formatted into consistent responses.</p><h3>Scaling the structure</h3><p>As your API grows, use the <code>Router</code> class to split routes into separate files per resource, keeping app.js clean.</p>",
          "thumbnail": "https://picsum.photos/400/250?6",
          "coverImage": "https://picsum.photos/800/400?16",
          "author": "Vincent Guizot",
@@ -157,7 +157,7 @@
             12
          ],
          "excerpt": "Tips for starting a career in software development.",
-         "content": "<h1>Start Coding Career</h1>",
+         "content": "<h1>How to Start Coding Career</h1><p><span class=\"lead\">Breaking into software development</span> can feel overwhelming, but a focused plan makes the path much clearer.</p><h2>Pick a Starting Language</h2><p>Choose one beginner-friendly language, such as JavaScript or Python, and commit to it long enough to build real projects.</p><h3>Avoid tutorial-hopping</h3><p>Jumping between languages too soon is one of the most common reasons beginners <strong>never gain real depth</strong>.</p><h2>Build a Portfolio</h2><p>Employers care more about what you can build than certificates alone. Create a handful of small, complete projects and publish the code.</p><h2>Learn the Fundamentals</h2><p>Beyond syntax, understand core concepts like data structures, version control with Git, and how the web works.</p><h3>Network and Apply Early</h3><p>Join developer communities and start applying to junior roles before you feel <em>fully ready</em>, since most learning happens on the job.</p>",
          "thumbnail": "https://picsum.photos/400/250?7",
          "coverImage": "https://picsum.photos/800/400?17",
          "author": "Vincent Guizot",
@@ -181,7 +181,7 @@
             11
          ],
          "excerpt": "Habits that make developers productive.",
-         "content": "<h1>Programming Habits</h1>",
+         "content": "<h1>Best Programming Habits</h1><p><span class=\"lead\">Great developers are not necessarily the ones who know the most syntax.</span> They are the ones with consistent habits that compound over time.</p><h2>Write Readable Code</h2><p>Use clear naming, small functions, and consistent formatting. Code is read far more often than it is written.</p><h2>Commit Often, Commit Small</h2><p>Break your work into small, logical commits with descriptive messages.</p><h3>Why it helps</h3><p>Small commits make it much easier to <em>review changes</em> and roll back if something goes wrong.</p><h2>Test as You Go</h2><p>Writing tests alongside your code, rather than after, catches bugs early and gives you the confidence to <strong>refactor without fear</strong>.</p><h2>Keep Learning</h2><p>Set aside regular time to read documentation and revisit fundamentals, since the field moves quickly.</p>",
          "thumbnail": "https://picsum.photos/400/250?8",
          "coverImage": "https://picsum.photos/800/400?18",
          "author": "Vincent Guizot",
@@ -206,7 +206,7 @@
             11
          ],
          "excerpt": "A structured protein diet for gaining lean muscle.",
-         "content": "<h1>Protein Diet</h1>",
+         "content": "<h1>Protein Diet for Muscle Gain</h1><p><span class=\"lead\">Building lean muscle requires more than just lifting weights.</span> Your diet, especially protein intake, plays a central role in recovery and growth.</p><h2>How Much Protein Do You Need?</h2><p>Most people aiming to build muscle should target roughly <strong>1.6 to 2.2 grams</strong> of protein per kilogram of body weight per day.</p><h3>Spreading it out</h3><p>Splitting that total across multiple meals appears to support muscle protein synthesis better than one large dose.</p><h2>Best Protein Sources</h2><p>Lean meats, eggs, fish, dairy, legumes, and tofu all provide high-quality protein.</p><h2>Timing Matters</h2><p>Including a meal shortly after training may offer a modest edge, though <em>total daily intake matters more</em> than exact timing.</p><h3>Do Not Forget the Rest</h3><p>Protein alone is not enough. Adequate calories, sleep, and progressive training are equally important.</p>",
          "thumbnail": "https://picsum.photos/400/250?9",
          "coverImage": "https://picsum.photos/800/400?19",
          "author": "Vincent Guizot",
@@ -230,7 +230,7 @@
             11
          ],
          "excerpt": "Understand the basics of a healthy diet.",
-         "content": "<h1>Healthy Diet</h1>",
+         "content": "<h1>Healthy Diet Basics</h1><p><span class=\"lead\">A healthy diet does not have to be complicated.</span> A few consistent habits can make a bigger difference than any short-term trend.</p><h2>Balance Your Macronutrients</h2><p>Aim for a mix of carbohydrates, protein, and healthy fats at most meals, favoring whole foods.</p><h2>Watch Portion Sizes</h2><p>Even healthy foods can lead to weight gain in large enough quantities.</p><h3>A simpler approach</h3><p>Paying attention to portions is often more <em>sustainable</em> than eliminating entire food groups.</p><h2>Stay Hydrated</h2><p>Water supports nearly every bodily function. Many people mistake mild dehydration for hunger.</p><h3>Consistency Over Perfection</h3><p>A sustainable diet is one you can maintain long-term. <strong>Small, consistent improvements</strong> beat short bursts of extreme restriction.</p>",
          "thumbnail": "https://picsum.photos/400/250?10",
          "coverImage": "https://picsum.photos/800/400?20",
          "author": "Vincent Guizot",
@@ -254,7 +254,7 @@
             16
          ],
          "excerpt": "Easy homemade chocolate cookies recipe.",
-         "content": "<h1>Chocolate Cookies</h1>",
+         "content": "<h1>Chocolate Cookie Recipe</h1><p><span class=\"lead\">These rich, chewy chocolate cookies</span> come together in under 30 minutes with basic pantry ingredients.</p><h2>Ingredients</h2><ul><li>2 cups all-purpose flour</li><li>3/4 cup cocoa powder</li><li>1 cup unsalted butter, softened</li><li>1 cup brown sugar</li><li>1/2 cup granulated sugar</li><li>2 large eggs</li><li>1 tsp vanilla extract</li><li>1 tsp baking soda</li><li>1/2 tsp salt</li><li>1 cup chocolate chips</li></ul><h2>Instructions</h2><h3>Prep</h3><p>Preheat the oven to <strong>175C (350F)</strong> and line a baking sheet with parchment paper.</p><h3>Mixing</h3><p>Cream the butter and sugars together until light and fluffy, then beat in the eggs and vanilla. In a separate bowl, whisk together the flour, cocoa powder, baking soda, and salt, then gradually combine the two and fold in the chocolate chips.</p><h3>Baking</h3><p>Scoop tablespoon-sized balls of dough onto the sheet and bake for <em>9 to 11 minutes</em>, then cool on the sheet briefly before transferring to a wire rack.</p>",
          "thumbnail": "https://picsum.photos/400/250?11",
          "coverImage": "https://picsum.photos/800/400?21",
          "author": "Vincent Guizot",
@@ -278,7 +278,7 @@
             16
          ],
          "excerpt": "Delicious strawberry cookies recipe.",
-         "content": "<h1>Strawberry Cookies</h1>",
+         "content": "<h1>Strawberry Cookie Recipe</h1><p><span class=\"lead\">Soft, pink-tinted cookies</span> with a real strawberry flavor, perfect for a sweet afternoon treat.</p><h2>Ingredients</h2><ul><li>2 1/4 cups all-purpose flour</li><li>1 cup unsalted butter, softened</li><li>3/4 cup granulated sugar</li><li>1 large egg</li><li>1 tsp vanilla extract</li><li>1/3 cup freeze-dried strawberries, crushed into powder</li><li>1 tsp baking powder</li><li>1/2 tsp salt</li></ul><h2>Instructions</h2><h3>Prep</h3><p>Preheat the oven to <strong>175C (350F)</strong> and line a baking sheet with parchment paper.</p><h3>Mixing</h3><p>Cream the butter and sugar until fluffy, then mix in the egg and vanilla extract. Whisk the flour, crushed freeze-dried strawberries, baking powder, and salt separately, then combine without overmixing.</p><h3>Baking</h3><p>Roll the dough into small balls, place on the sheet, and bake for <em>10 to 12 minutes</em> until the edges are just set.</p>",
          "thumbnail": "https://picsum.photos/400/250?12",
          "coverImage": "https://picsum.photos/800/400?22",
          "author": "Vincent Guizot",
@@ -308,7 +308,7 @@
       },
       {
          "id": 3,
-         "name": "Elevora Bootcamp",
+         "name": "Sekolah Stack",
          "description": "Premium coding bootcamp focused on modern software engineering skills.",
          "logoImage": "https://picsum.photos/200/200?3"
       },
