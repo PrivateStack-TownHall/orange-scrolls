@@ -6,7 +6,7 @@ export default function ArticleTags({ tags }) {
       {tags.map((item) => (
         <span
           key={item.tagId}
-          className="px-3 py-1 text-xs bg-gray-200 rounded"
+          className="px-3 py-1 text-xs rounded bg-[var(--os-nav-hover)] border border-[var(--os-border-soft)]"
         >
           #{item.tag.name}
         </span>

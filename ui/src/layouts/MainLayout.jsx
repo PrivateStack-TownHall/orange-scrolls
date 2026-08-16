@@ -5,13 +5,18 @@ import TopBar from "./TopBar";
 
 export default function MainLayout() {
   return (
-    <div className="flex h-screen ">
-      <LeftBar />
+    <div className="main-content">
+      {/* LEFT — sidebar (LeftBar renders the .scroll wrapper itself) */}
+      <div className="main-content__left">
+        <LeftBar />
+      </div>
 
-      <div className="flex flex-col flex-1">
+      {/* RIGHT — topbar + page outlet, flush against the sidebar
+          (no margin/padding-left — see .main-content__right in globals.css) */}
+      <div className="main-content__right">
         <TopBar />
 
-        <main className="flex-1 overflow-auto p-6 bg-[#fdf6e3]">
+        <main className="os-content">
           <Outlet />
         </main>
       </div>

@@ -1,30 +1,19 @@
 import { Link } from "react-router-dom";
-import { Pencil, Trash2, Eye } from "lucide-react";
-import { motion } from "framer-motion";
+import { Pencil, Eye } from "lucide-react";
+import Badge from "../../../components/shared/ui/Badge";
 
 export default function ArticleCard({ article, setDeleteTarget }) {
   return (
-    <motion.div
-      whileHover={{ y: -5 }}
-      transition={{ duration: 0.2 }}
-      className="
-        border border-[#B08968]
-        bg-[#FDF6E3]
-        rounded
-        overflow-hidden
-        shadow-sm
-        flex flex-col
-      "
-    >
+    <div className="os-card-portrait os-card-flush os-hover-lift animate-in-fade overflow-hidden flex flex-col">
       {/* THUMBNAIL */}
       {article.thumbnail ? (
         <img
           src={article.thumbnail}
           alt={article.title}
-          className="w-full h-40 object-cover"
+          className="w-full h-40 object-cover p-2 border-md"
         />
       ) : (
-        <div className="w-full h-40 bg-[#f4e8c7] flex items-center justify-center text-xs opacity-60">
+        <div className="w-full h-40 bg-[var(--os-nav-hover)] flex items-center justify-center text-xs opacity-60">
           No Image
         </div>
       )}
@@ -37,15 +26,9 @@ export default function ArticleCard({ article, setDeleteTarget }) {
         </p>
 
         {/* STATUS */}
-        <span
-          className={`text-[11px] px-2 py-[2px] rounded w-fit mb-2 ${
-            article.status === "Published"
-              ? "bg-green-200 text-green-800"
-              : "bg-gray-200 text-gray-700"
-          }`}
-        >
-          {article.status}
-        </span>
+        <div className="mb-2">
+          <Badge status={article.status} label={article.status} />
+        </div>
 
         {/* EXCERPT */}
         <p className="text-sm opacity-80 mb-3 line-clamp-3">
@@ -87,11 +70,15 @@ export default function ArticleCard({ article, setDeleteTarget }) {
             onClick={() => setDeleteTarget(article)}
             className="flex items-center gap-1 text-red-600 opacity-70 hover:opacity-100"
           >
-            <Trash2 size={14} />
+            <img
+              src="/icons/torn_scroll.png"
+              alt=""
+              className="w-4 h-4 object-contain"
+            />
             Delete
           </button>
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 }

@@ -1,13 +1,14 @@
 import { useEffect, useState } from "react";
-import { createTag, getBrands } from "../../services";
+import { createTag, updateTag, getBrands } from "../../services";
 
-export default function CreateTagForm({ onSuccess }) {
+export default function CreateTagForm({ initialData, onSuccess }) {
   const [brands, setBrands] = useState([]);
 
+  const isEditing = !!initialData;
+
   const [form, setForm] = useState({
-    name: "",
-    brandId: "",
-    categoryId: "",
+    name: initialData?.name ?? "",
+    brandId: initialData?.brandId ?? "",
   });
 
   useEffect(() => {
@@ -30,7 +31,11 @@ export default function CreateTagForm({ onSuccess }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    await createTag(form);
+    if (isEditing) {
+      await updateTag(initialData.id, form);
+    } else {
+      await createTag(form);
+    }
 
     onSuccess?.();
   };
@@ -70,27 +75,9 @@ export default function CreateTagForm({ onSuccess }) {
         </select>
       </div>
 
-      {/* CATEGORY */}
-      {/* <div>
-        <label className="os-label">Category</label>
-
-        <select
-          name="categoryId"
-          value={form.categoryId}
-          onChange={handleChange}
-          className="os-input"
-        >
-          <option value="">Select Category</option>
-
-          {categories.map((cat) => (
-            <option key={cat.id} value={cat.id}>
-              {cat.name}
-            </option>
-          ))}
-        </select>
-      </div> */}
-
-      <button className="os-btn-primary">Save Tag</button>
+      <button className="os-btn-primary">
+        {isEditing ? "Update Tag" : "Save Tag"}
+      </button>
     </form>
   );
 }

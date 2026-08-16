@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
-import { Trash2, X } from "lucide-react";
+import { Pencil, X } from "lucide-react";
 
 import DataToolbar from "../../components/shared/ui/DataToolbar";
 import DataTable from "../../components/shared/ui/DataTable";
+import PageHeader from "../../components/shared/layout/PageHeader";
 
 import ConfirmDialog from "../../components/shared/feedback/ConfirmDialog";
 import Toast from "../../components/shared/feedback/Toast";
@@ -13,16 +14,18 @@ import CreateTagForm from "./CreateTag";
 
 import useSearch from "../../hooks/useSearch";
 
-import { getTags, getBrands, deleteTag } from "../../services";
+import { getTags, getBrands, getArticles, deleteTag } from "../../services";
 
 export default function Tags() {
   const [tags, setTags] = useState([]);
   const [brands, setBrands] = useState([]);
+  const [articleCounts, setArticleCounts] = useState({});
 
   const [view, setView] = useState("grid");
   const [loading, setLoading] = useState(true);
 
   const [deleteTarget, setDeleteTarget] = useState(null);
+  const [editTarget, setEditTarget] = useState(null);
   const [openCreate, setOpenCreate] = useState(false);
 
   const [toast, setToast] = useState({
@@ -33,21 +36,42 @@ export default function Tags() {
 
   // FETCH DATA
   useEffect(() => {
+    let ignore = false;
+
     const fetchData = async () => {
       try {
-        const tagsData = await getTags();
-        const brandsData = await getBrands();
+        const [tagsData, brandsData, articlesData] = await Promise.all([
+          getTags(),
+          getBrands(),
+          getArticles(),
+        ]);
+
+        if (ignore) return;
 
         setTags(tagsData);
         setBrands(brandsData);
+
+        // Tally article counts per tag client-side (the tags endpoint
+        // doesn't include the join-table relation).
+        const counts = {};
+        articlesData.forEach((article) => {
+          article.tags?.forEach((item) => {
+            counts[item.tagId] = (counts[item.tagId] || 0) + 1;
+          });
+        });
+        setArticleCounts(counts);
       } catch (err) {
         console.error("Failed to fetch tags:", err);
       } finally {
-        setLoading(false);
+        if (!ignore) setLoading(false);
       }
     };
 
     fetchData();
+
+    return () => {
+      ignore = true;
+    };
   }, []);
 
   const { query, setQuery, filteredData } = useSearch(tags, ["name"]);
@@ -81,17 +105,69 @@ export default function Tags() {
     }
   };
 
+  const editSuccess = () => {
+    setEditTarget(null);
+
+    setToast({ show: true, type: "success", message: "Tag updated" });
+
+    getTags().then(setTags);
+  };
+
   const columns = [
-    { key: "id", label: "ID" },
-    { key: "name", label: "Tag Name" },
+    { key: "id", label: "#" },
+
+    {
+      key: "name",
+      label: "Tag Name",
+      render: (row) => (
+        <span className="flex items-center gap-2 font-medium">
+          <img
+            src="/icons/tags.png"
+            alt=""
+            className="w-5 h-5 object-contain"
+          />
+          {row.name}
+        </span>
+      ),
+    },
+
+    {
+      key: "articles",
+      label: "Articles",
+      render: (row) => articleCounts[row.id] ?? 0,
+    },
+
+    {
+      key: "createdAt",
+      label: "Created At",
+      render: (row) => new Date(row.createdAt).toLocaleDateString(),
+    },
 
     {
       key: "actions",
       label: "Actions",
       render: (row) => (
-        <button onClick={() => setDeleteTarget(row)} className="text-red-600">
-          <Trash2 size={16} />
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setEditTarget(row)}
+            className="p-1.5 rounded border border-[var(--os-border-soft)] hover:bg-[var(--os-nav-hover)]"
+            aria-label="Edit tag"
+          >
+            <Pencil size={14} />
+          </button>
+
+          <button
+            onClick={() => setDeleteTarget(row)}
+            className="p-1.5 rounded border border-[var(--os-border-soft)] hover:bg-[var(--os-nav-hover)]"
+            aria-label="Delete tag"
+          >
+            <img
+              src="/icons/torn_scroll.png"
+              alt=""
+              className="w-3.5 h-3.5 object-contain"
+            />
+          </button>
+        </div>
       ),
     },
   ];
@@ -104,13 +180,15 @@ export default function Tags() {
     <div>
       {/* HEADER */}
 
-      <div className="flex justify-between mb-6">
-        <h1 className="text-2xl font-bold">Tags</h1>
-
-        <button onClick={() => setOpenCreate(true)} className="os-btn-primary">
-          + Create Tag
-        </button>
-      </div>
+      <PageHeader
+        title="Tags"
+        breadcrumb={[{ label: "Dashboard", path: "/" }, { label: "Tags" }]}
+        action={
+          <button onClick={() => setOpenCreate(true)} className="os-btn-primary">
+            + Create Tag
+          </button>
+        }
+      />
 
       {/* TOOLBAR */}
 
@@ -132,34 +210,35 @@ export default function Tags() {
       {view === "grid" && filteredData.length > 0 && (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {groupedTags.map((brand) => (
-            <div key={brand.id} className="os-card bg-[#f4e8c7]/40">
+            <div key={brand.id} className="os-card">
               <h2 className="font-semibold mb-3">{brand.name}</h2>
 
               <div className="flex flex-wrap gap-2">
                 {brand.tags.map((tag) => (
                   <span
                     key={tag.id}
-                    className="
-                    flex items-center gap-1
-                    text-xs
-                    px-3 py-1
-                    rounded
-                    bg-[#f4e8c7]/80
-                    hover:bg-[#f4e8c7]
-                    transition
-                    cursor-pointer
-                    "
+                    className="flex items-center gap-1.5 text-xs pl-3 pr-2 py-1.5 rounded-full bg-[var(--os-nav-hover)] hover:bg-[var(--os-nav-active)] transition-colors"
                   >
-                    {tag.name}
-
+                    <img
+                      src="/icons/tags.png"
+                      alt=""
+                      className="w-3.5 h-3.5 object-contain"
+                    />
+                    #{tag.name}
                     <button
+                      type="button"
                       onClick={() => setDeleteTarget(tag)}
-                      className="text-red-600"
+                      aria-label={`Delete ${tag.name}`}
+                      className="rounded-full p-0.5 hover:bg-black/10 transition-colors"
                     >
                       <X size={12} />
                     </button>
                   </span>
                 ))}
+
+                {brand.tags.length === 0 && (
+                  <span className="text-xs opacity-50">No tags</span>
+                )}
               </div>
             </div>
           ))}
@@ -169,7 +248,9 @@ export default function Tags() {
       {/* TABLE VIEW */}
 
       {view === "table" && filteredData.length > 0 && (
-        <DataTable columns={columns} data={filteredData} />
+        <div className="os-card">
+          <DataTable columns={columns} data={filteredData} />
+        </div>
       )}
 
       {/* CREATE TAG POPUP */}
@@ -188,8 +269,22 @@ export default function Tags() {
               type: "success",
               message: "Tag created",
             });
+
+            getTags().then(setTags);
           }}
         />
+      </PopUp>
+
+      {/* EDIT TAG POPUP */}
+
+      <PopUp
+        isOpen={!!editTarget}
+        onClose={() => setEditTarget(null)}
+        title="Edit Tag"
+      >
+        {editTarget && (
+          <CreateTagForm initialData={editTarget} onSuccess={editSuccess} />
+        )}
       </PopUp>
 
       {/* CONFIRM DELETE */}

@@ -6,15 +6,18 @@ export default function DataToolbar({ view, setView, search, setSearch }) {
       {/* LEFT */}
 
       <div className="flex items-center gap-3">
-        <input
-          type="text"
-          placeholder="Search..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="os-input w-60"
-        />
+        <div className="os-search">
+          <img src="/icons/treasure_map_magnifier.png" alt="" aria-hidden="true" />
+          <input
+            type="text"
+            placeholder="Search..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="os-input"
+          />
+        </div>
 
-        <select className="os-input w-44">
+        <select className="os-input" style={{ width: 176 }}>
           <option>All Brands</option>
           <option>OrangeKode</option>
           <option>Sadino Technology</option>
@@ -23,13 +26,13 @@ export default function DataToolbar({ view, setView, search, setSearch }) {
           <option>Cookiefy</option>
         </select>
 
-        <select className="os-input w-36">
+        <select className="os-input" style={{ width: 144 }}>
           <option>Newest</option>
           <option>Oldest</option>
           <option>Most Views</option>
         </select>
 
-        <select className="os-input w-36">
+        <select className="os-input" style={{ width: 144 }}>
           <option>Published</option>
           <option>Draft</option>
           <option>All</option>

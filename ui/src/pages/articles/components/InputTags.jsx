@@ -39,7 +39,7 @@ function InputTags({ tags, tagInput, setTagInput, setForm }) {
       {tags.map((tag) => (
         <span
           key={tag}
-          className="bg-[#e7d6b2] px-2 py-1 text-xs rounded flex items-center gap-1"
+          className="bg-[var(--os-nav-hover)] px-2.5 py-1 text-xs rounded-full flex items-center gap-1"
         >
           {tag}
 

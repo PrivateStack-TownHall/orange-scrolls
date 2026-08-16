@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { CheckCircle, XCircle, Info } from "lucide-react";
+import { XCircle, Info } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function Toast({
@@ -21,7 +21,13 @@ export default function Toast({
 
   const styles = {
     success: {
-      icon: <CheckCircle className="w-5 h-5" />,
+      icon: (
+        <img
+          src="/icons/approved_stamp.png"
+          alt=""
+          className="w-6 h-6 object-contain shrink-0"
+        />
+      ),
       bg: "bg-green-600",
     },
     error: {

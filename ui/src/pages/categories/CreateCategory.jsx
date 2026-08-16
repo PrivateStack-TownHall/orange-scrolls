@@ -1,12 +1,14 @@
 import { useEffect, useState } from "react";
-import { getBrands, createCategory } from "../../services";
+import { getBrands, createCategory, updateCategory } from "../../services";
 
-export default function CreateCategoryForm({ onSuccess }) {
+export default function CreateCategoryForm({ initialData, onSuccess }) {
   const [brands, setBrands] = useState([]);
 
+  const isEditing = !!initialData;
+
   const [form, setForm] = useState({
-    name: "",
-    brandId: "",
+    name: initialData?.name ?? "",
+    brandId: initialData?.brandId ?? "",
   });
 
   useEffect(() => {
@@ -28,7 +30,11 @@ export default function CreateCategoryForm({ onSuccess }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    await createCategory(form);
+    if (isEditing) {
+      await updateCategory(initialData.id, form);
+    } else {
+      await createCategory(form);
+    }
 
     onSuccess?.();
   };
@@ -68,7 +74,9 @@ export default function CreateCategoryForm({ onSuccess }) {
         </select>
       </div>
 
-      <button className="os-btn-primary">Save Category</button>
+      <button className="os-btn-primary">
+        {isEditing ? "Update Category" : "Save Category"}
+      </button>
     </form>
   );
 }

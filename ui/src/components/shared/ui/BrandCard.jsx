@@ -1,14 +1,5 @@
-import {
-  Pencil,
-  Trash2,
-  FileText,
-  Tag,
-  Layers,
-  Image,
-  Eye,
-} from "lucide-react";
+import { Pencil, FileText, Tag, Layers, Image, Eye } from "lucide-react";
 import { Link } from "react-router-dom";
-import { motion } from "framer-motion";
 
 export default function BrandCard({
   brand,
@@ -44,31 +35,58 @@ export default function BrandCard({
   ];
 
   return (
-    <motion.div
-      whileHover={{ y: -1 }}
-      transition={{ duration: 0.2 }}
-      className="os-card flex flex-col gap-4"
-    >
+    <div className="os-card os-hover-lift animate-in-fade flex flex-col gap-4">
       {/* HEADER */}
 
-      <div className="flex items-center justify-between">
-        <h2 className="font-semibold text-lg">{brand.name}</h2>
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center gap-3 min-w-0">
+          <img
+            src={brand.logoImage || "/icons/shield_feather.png"}
+            alt=""
+            aria-hidden="true"
+            className="w-10 h-10 object-contain shrink-0"
+          />
+          <h2 className="font-semibold text-lg truncate">{brand.name}</h2>
+        </div>
 
-        <div className="flex gap-2">
-          <Link to={`/brands/${brand.id}/detail`}>
-            <Eye size={12} />
-          </Link>
-          <Link to={`/brands/${brand.id}/edit`}>
-            <Pencil size={12} />
+        <div className="flex gap-1 shrink-0">
+          <Link
+            to={`/brands/${brand.id}/detail`}
+            className="p-1.5 rounded border border-[var(--os-border-soft)] hover:bg-[var(--os-nav-hover)]"
+            aria-label="View brand"
+          >
+            <Eye size={14} />
           </Link>
 
-          <button onClick={() => onDelete(brand)} className="text-red-600">
-            <Trash2 size={12} />
+          <Link
+            to={`/brands/${brand.id}/edit`}
+            className="p-1.5 rounded border border-[var(--os-border-soft)] hover:bg-[var(--os-nav-hover)]"
+            aria-label="Edit brand"
+          >
+            <Pencil size={14} />
+          </Link>
+
+          <button
+            onClick={() => onDelete(brand)}
+            className="p-1.5 rounded border border-[var(--os-border-soft)] hover:bg-[var(--os-nav-hover)]"
+            aria-label="Delete brand"
+          >
+            <img
+              src="/icons/torn_scroll.png"
+              alt=""
+              className="w-3.5 h-3.5 object-contain"
+            />
           </button>
         </div>
       </div>
 
-      <div className="border-t border-[#e3d3a9]" />
+      {brand.description && (
+        <p className="text-xs opacity-70 -mt-2 line-clamp-2">
+          {brand.description}
+        </p>
+      )}
+
+      <div className="border-t border-[var(--os-border-soft)]" />
 
       {/* STATS */}
 
@@ -87,9 +105,9 @@ export default function BrandCard({
                 <span className="font-semibold">{stat.value}</span>
               </div>
 
-              <div className="h-2 bg-[#f4e8c7] rounded">
+              <div className="h-2 bg-[var(--os-nav-hover)] rounded">
                 <div
-                  className="h-2 bg-orange-400 rounded"
+                  className="h-2 bg-[var(--os-primary)] rounded"
                   style={{ width: `${percent}%` }}
                 />
               </div>
@@ -97,6 +115,6 @@ export default function BrandCard({
           );
         })}
       </div>
-    </motion.div>
+    </div>
   );
 }

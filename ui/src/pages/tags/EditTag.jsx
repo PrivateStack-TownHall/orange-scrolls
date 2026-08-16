@@ -1,7 +1,18 @@
-import React from "react";
+import { useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 
-const EditTag = () => {
-  return <div>EditTag</div>;
-};
+/**
+ * Direct navigation to this route (e.g. a bookmarked URL) redirects back
+ * to the Tags list, where editing happens via the Edit button's popup —
+ * the same pattern already used for Create.
+ */
+export default function EditTag() {
+  const { id } = useParams();
+  const navigate = useNavigate();
 
-export default EditTag;
+  useEffect(() => {
+    navigate("/tags", { replace: true });
+  }, [id, navigate]);
+
+  return null;
+}

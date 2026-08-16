@@ -7,8 +7,15 @@
    BASE
 ========================= */
 
+html,
+body,
+#root {
+  min-height: 100vh;
+}
+
 body {
-  background: var(--os-bg-main);
+  background-color: var(--os-bg-main);
+
   color: var(--os-text-main);
   font-family: var(--os-font-main);
 }
@@ -17,22 +24,111 @@ body {
    LAYOUT
 ========================= */
 
-.os-sidebar {
-  background: var(--os-bg-main);
-  border-color: var(--os-border-main);
+/* =========================
+   LAYOUT — main-content
+   MainLayout renders exactly 2 columns inside .main-content:
+   .main-content__left (the sidebar) and .main-content__right
+   (topbar + page outlet). No gap/margin/padding between them —
+   the right column sits flush against the sidebar.
+========================= */
 
-  @apply w-64 h-screen border-r p-4 overflow-y-auto;
+.main-content {
+  display: flex;
+  width: 100%;
+  height: 100vh;
+  margin: 0;
+  padding: 0;
+
+  background-image: var(--os-bg-main-image);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+}
+
+.main-content__left {
+  flex-shrink: 0;
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+
+.main-content__right {
+  flex: 1;
+  min-width: 0; /* lets long content shrink instead of overflowing the flex row */
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+}
+
+/* =========================
+   SIDEBAR — "Scroll" wrapper
+   .scroll is the div holding the whole left sidebar. Inside it:
+     .scroll__frame       — decorative artwork only (absolute, behind)
+     .scroll__menu-list   — the actual nav content (relative, in front),
+                             sized to fill .scroll via height:100%
+   The frame auto-sizes with flexbox (top/bottom images at natural
+   height, middle stretches with flex:1) — no hand-calculated pixels.
+========================= */
+
+.scroll {
+  position: relative;
+  width: 18rem; /* 288px — change ONLY this to resize the sidebar */
+  height: 100%;
+  flex-shrink: 0;
+}
+
+.scroll__frame {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.scroll__frame img {
+  display: block;
+  width: 100%;
+  height: auto;
+  flex-shrink: 0;
+}
+
+.scroll__frame-middle {
+  flex: 1 1 auto;
+  min-height: 0;
+  background-image: url("/backgrounds/scrolls-leftbar-middle.png");
+  background-repeat: repeat-y;
+  background-size: 100% auto;
+  background-position: top center;
+}
+
+.scroll__menu-list {
+  position: relative;
+  z-index: 10;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.os-nav-list,
+.os-nav-sublist {
+  list-style: none;
+  margin: 0;
+  padding: 0;
 }
 
 .os-topbar {
-  background: var(--os-bg-main);
   border-color: var(--os-border-main);
-
-  @apply h-14 flex items-center justify-between px-6 border-b;
+  /* backdrop-filter: blur(4px); */
+  background: none;
+  @apply h-14 flex items-center justify-between px-6;
 }
 
 .os-content {
-  background: var(--os-bg-content);
+  background: color-mix(in srgb, var(--os-bg-content) 22%, transparent);
 
   @apply flex-1 p-6 overflow-auto;
 }
@@ -79,10 +175,104 @@ body {
 ========================= */
 
 .os-card {
-  background: var(--os-bg-content);
-  border-color: var(--os-border-main);
+  background-image: var(--os-card-parchment-image);
+  background-size: 100% 100%;
+  background-position: center;
+  background-repeat: no-repeat;
 
-  @apply border rounded p-5 shadow-sm;
+  @apply rounded-lg p-6 shadow-md;
+}
+
+/* Compact variant for dense grids (media thumbnails, small tiles) */
+.os-card-compact {
+  background-image: var(--os-card-parchment-image);
+  background-size: 100% 100%;
+  background-position: center;
+  background-repeat: no-repeat;
+
+  @apply rounded-md p-2 shadow-sm;
+}
+
+/* Portrait variant — for tall/narrow cards (e.g. sidebar-style panels) */
+.os-card-portrait {
+  background-image: var(--os-card-parchment-portrait-image);
+  background-size: 100% 100%;
+  background-position: center;
+  background-repeat: no-repeat;
+
+  @apply rounded-lg p-6 shadow-md;
+}
+
+/* Banner variant — for very wide/short panels (e.g. "System Overview",
+   "Storage Usage") so the frame doesn't get squished or cropped oddly */
+.os-card-banner {
+  background-image: url("/backgrounds/main-background-landscape.png");
+  background-size: 100% 100%;
+  background-position: center;
+  background-repeat: no-repeat;
+
+  @apply rounded-lg p-6 shadow-md;
+}
+
+/* Removes the card's own padding — for cases where content (e.g. a
+   thumbnail image) needs to bleed flush to the card's edges. */
+.os-card-flush {
+  padding: 0;
+}
+
+/* =========================
+   PAGE HEADER
+   (feather icon + title + breadcrumb, used at the
+   top of every page per the redesign reference)
+========================= */
+
+.os-page-header-divider {
+  border: none;
+  border-top: 1px solid var(--os-border-soft);
+  margin: 12px 0 20px;
+}
+
+/* =========================
+   SEARCH INPUT (with icon)
+========================= */
+
+.os-search {
+  position: relative;
+  width: 260px;
+}
+
+.os-search img,
+.os-search svg {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 16px;
+  height: 16px;
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+.os-search input {
+  padding-left: 34px;
+}
+
+/* =========================
+   EDITOR SURFACE
+   (main-background.png applied subtly behind the
+   TipTap writing area, per redesign request)
+========================= */
+
+.os-editor-surface {
+  background-image:
+    linear-gradient(
+      color-mix(in srgb, var(--os-bg-input) 65%, transparent),
+      color-mix(in srgb, var(--os-bg-input) 65%, transparent)
+    ),
+    var(--os-bg-main-image);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
 }
 
 /* =========================
@@ -128,11 +318,116 @@ body {
 }
 
 /* =========================
+   ANIMATE-IN UTILITIES
+   (lightweight replacement for framer-motion
+   on simple enter/hover transitions)
+========================= */
+
+@keyframes os-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes os-slide-down {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes os-slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes os-scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes os-candle-flicker {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scaleY(1);
+  }
+  50% {
+    opacity: 0.85;
+    transform: scaleY(0.97);
+  }
+}
+
+.animate-in-fade {
+  animation: os-fade-in 0.2s ease-out both;
+}
+
+.animate-in-slide-down {
+  animation: os-slide-down 0.2s ease-out both;
+}
+
+.animate-in-slide-up {
+  animation: os-slide-up 0.25s ease-out both;
+}
+
+.animate-in-scale {
+  animation: os-scale-in 0.15s ease-out both;
+}
+
+.animate-candle-flicker {
+  animation: os-candle-flicker 2.4s ease-in-out infinite;
+  transform-origin: bottom center;
+}
+
+/* Collapsible dropdown section (sidebar submenus) driven purely by CSS —
+   toggle the `grid-rows-[1fr]` / `grid-rows-[0fr]` utility classes from JS. */
+.os-collapsible {
+  display: grid;
+  transition: grid-template-rows 0.25s ease-in-out;
+}
+
+.os-collapsible > div {
+  overflow: hidden;
+  min-height: 0;
+}
+
+/* Card / stat hover-lift (replaces framer-motion whileHover={{ y: -6 }}) */
+.os-hover-lift {
+  transition:
+    transform 0.2s ease-out,
+    box-shadow 0.2s ease-out;
+}
+
+.os-hover-lift:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 10px 20px -8px rgb(0 0 0 / 0.25);
+}
+
+/* =========================
    BADGE
 ========================= */
 
 .os-badge {
-  @apply text-xs px-2 py-1 rounded;
+  @apply inline-flex items-center gap-1.5 text-xs font-medium px-2 py-1 rounded;
 }
 
 .os-badge-draft {
@@ -148,16 +443,66 @@ body {
 ========================= */
 
 .os-nav {
-  @apply block px-3 py-2 rounded text-sm;
+  @apply flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm transition-colors;
 }
 
 .os-nav:hover {
-  background: var(--os-nav-hover);
+  background: color-mix(in srgb, var(--os-nav-hover) 70%, transparent);
 }
 
 .os-nav-active {
-  background: var(--os-nav-active);
+  background: color-mix(in srgb, var(--os-nav-active) 75%, transparent);
   @apply font-semibold;
+}
+
+.os-nav-sub {
+  @apply block px-3 py-1.5 rounded-md text-[13px] opacity-80 transition-colors;
+}
+
+.os-nav-sub:hover {
+  background: color-mix(in srgb, var(--os-nav-hover) 60%, transparent);
+  opacity: 1;
+}
+
+.os-nav-sub-active {
+  background: color-mix(in srgb, var(--os-nav-active) 60%, transparent);
+  @apply font-medium;
+  opacity: 1;
+}
+
+/* =========================
+   STATUS PILL (Active/Inactive — Categories, Brands tables)
+========================= */
+
+.os-status-pill {
+  @apply inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full;
+}
+
+.os-status-active {
+  background: color-mix(in srgb, #16a34a 15%, transparent);
+  color: #15803d;
+}
+
+.os-status-active::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: #16a34a;
+}
+
+.os-status-inactive {
+  background: color-mix(in srgb, var(--os-text-main) 10%, transparent);
+  color: var(--os-text-main);
+  opacity: 0.7;
+}
+
+.os-status-inactive::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: currentColor;
 }
 
 /* =========================

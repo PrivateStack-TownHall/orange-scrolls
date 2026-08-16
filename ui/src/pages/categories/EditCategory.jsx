@@ -1,7 +1,18 @@
-import React from "react";
+import { useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 
-const EditCategory = () => {
-  return <div>EditCategory</div>;
-};
+/**
+ * Direct navigation to this route (e.g. a bookmarked URL) redirects back
+ * to the Categories list, where editing happens via the Edit button's
+ * popup — the same pattern already used for Create.
+ */
+export default function EditCategory() {
+  const { id } = useParams();
+  const navigate = useNavigate();
 
-export default EditCategory;
+  useEffect(() => {
+    navigate("/categories", { replace: true });
+  }, [id, navigate]);
+
+  return null;
+}

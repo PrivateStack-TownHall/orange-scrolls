@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import { FileText, Tag, Layers, Image, Building } from "lucide-react";
-import { motion } from "framer-motion";
-import { Link } from "react-router-dom";
+
+import Badge from "../../components/shared/ui/Badge";
+import PageHeader from "../../components/shared/layout/PageHeader";
 
 import {
   getArticles,
@@ -56,96 +56,64 @@ export default function Dashboard() {
   }, []);
 
   const cards = [
-    { title: "Articles", value: stats.articles, icon: FileText },
-    { title: "Brands", value: stats.brands, icon: Building },
-    { title: "Categories", value: stats.categories, icon: Layers },
-    { title: "Tags", value: stats.tags, icon: Tag },
-    { title: "Media", value: stats.media, icon: Image },
-  ];
-
-  const brands = [
+    { title: "Articles", value: stats.articles, icon: "/icons/articles.png" },
+    { title: "Brands", value: stats.brands, icon: "/icons/brands.png" },
     {
-      id: 1,
-      name: "Orange Kode",
+      title: "Categories",
+      value: stats.categories,
+      icon: "/icons/categories.png",
     },
-    {
-      id: 2,
-      name: "Sadino Technology",
-    },
-    {
-      id: 3,
-      name: "Elevora Bootcamp",
-    },
-    {
-      id: 4,
-      name: "Protein Shack",
-    },
-    {
-      id: 5,
-      name: "Cookiefy",
-    },
+    { title: "Tags", value: stats.tags, icon: "/icons/tags.png" },
+    { title: "Media", value: stats.media, icon: "/icons/media.png" },
   ];
 
   return (
     <div>
-      {/* HEADER */}
-
-      <div className="flex justify-between items-start mb-6">
-        <div>
-          <h1 className="text-3xl font-bold">Orange Scrolls</h1>
-          <p className="text-sm opacity-70">Knowledge Engine Dashboard</p>
-        </div>
-
-        {/* BRAND SHORTCUT */}
-
-        <div className="flex gap-2 flex-wrap justify-end">
-          {brands.map((brand, i) => (
-            <Link
-              key={i}
-              to={`/brands/${brand.id}/detail`}
-              className="text-xs border border-[#B08968] px-3 py-1 rounded hover:bg-[#e7d6b2]"
-            >
-              {brand.name}
-            </Link>
-          ))}
-        </div>
-      </div>
+      <PageHeader
+        title="Orange Scrolls"
+        breadcrumb={[{ label: "Dashboard" }]}
+      />
 
       {/* SYSTEM OVERVIEW */}
 
-      <div className="os-card mb-8">
-        <h2 className="text-lg font-semibold mb-2">System Overview</h2>
+      <div className="os-card-banner mb-8 animate-in-fade flex items-center gap-4 px-2">
+        <img
+          src="/icons/compass.png"
+          alt=""
+          aria-hidden="true"
+          className="w-12 h-12 object-contain shrink-0 ml-2"
+        />
 
-        <p className="text-sm opacity-80">
-          Orange Scrolls powers internal content management for multiple brands
-          including OrangeKode, Sadino Technology, Elevora Bootcamp, Protein
-          Shack, and Cookiefy.
-        </p>
+        <div>
+          <h2 className="text-lg font-semibold mb-1">System Overview</h2>
+
+          <p className="text-sm opacity-80">
+            Orange Scrolls powers internal content management for multiple
+            brands including OrangeKode, Sadino Technology, Sekolah Stack,
+            Protein Shack, and Cookiefy.
+          </p>
+        </div>
       </div>
 
       {/* STATS */}
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 mb-10">
-        {cards.map((card, i) => {
-          const Icon = card.icon;
+        {cards.map((card, i) => (
+          <div key={i} className="os-card os-hover-lift animate-in-slide-up">
+            <div className="flex justify-between mb-3">
+              <img
+                src={card.icon}
+                alt=""
+                aria-hidden="true"
+                className="w-10 h-10 object-contain"
+              />
+            </div>
 
-          return (
-            <motion.div
-              key={i}
-              whileHover={{ y: -6 }}
-              transition={{ duration: 0.2 }}
-              className="os-card"
-            >
-              <div className="flex justify-between mb-3">
-                <Icon size={20} className="opacity-70" />
-              </div>
+            <div className="text-3xl font-bold">{card.value}</div>
 
-              <div className="text-3xl font-bold">{card.value}</div>
-
-              <div className="text-sm opacity-70">{card.title}</div>
-            </motion.div>
-          );
-        })}
+            <div className="text-sm opacity-70">{card.title}</div>
+          </div>
+        ))}
       </div>
 
       {/* ARTICLES SECTION */}
@@ -157,12 +125,17 @@ export default function Dashboard() {
           <h2 className="text-lg font-semibold mb-4">Published Articles</h2>
 
           <div className="space-y-2">
+            {published.length === 0 && (
+              <p className="text-sm opacity-60">No published articles yet.</p>
+            )}
+
             {published.map((a) => (
               <div
                 key={a.id}
-                className="text-sm border-b border-[#e3d3a9] pb-1"
+                className="flex items-center justify-between gap-3 text-sm border-b border-[var(--os-border-soft)] pb-2"
               >
-                {a.title}
+                <span className="truncate">{a.title}</span>
+                <Badge status="Published" label="" size="sm" />
               </div>
             ))}
           </div>
@@ -174,12 +147,17 @@ export default function Dashboard() {
           <h2 className="text-lg font-semibold mb-4">Draft Articles</h2>
 
           <div className="space-y-2">
+            {draft.length === 0 && (
+              <p className="text-sm opacity-60">No draft articles yet.</p>
+            )}
+
             {draft.map((a) => (
               <div
                 key={a.id}
-                className="text-sm border-b border-[#e3d3a9] pb-1"
+                className="flex items-center justify-between gap-3 text-sm border-b border-[var(--os-border-soft)] pb-2"
               >
-                {a.title}
+                <span className="truncate">{a.title}</span>
+                <Badge status="Draft" label="" size="sm" />
               </div>
             ))}
           </div>

@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import ArticleEditor from "../../components/editors/TipTapEditor";
 import ArticlePopUpMedia from "./components/ArticlePopUpMedia";
 import { createArticle, getBrands, getCategories } from "../../services";
@@ -8,9 +7,10 @@ import UploadBox from "./components/UploadBox";
 import InputTags from "./components/InputTags";
 import CategorySelect from "./components/CategorySelect";
 import BrandSelect from "./components/BrandSelect";
+import PageHeader from "../../components/shared/layout/PageHeader";
+import { slugify } from "../../utils/slugify";
 
 export default function CreateArticle() {
-  const navigate = useNavigate();
   const [content, setContent] = useState("");
 
   const [brands, setBrands] = useState([]);
@@ -24,6 +24,7 @@ export default function CreateArticle() {
 
   const [form, setForm] = useState({
     title: "",
+    slug: "",
     brandId: "",
     categoryId: "",
     excerpt: "",
@@ -34,6 +35,10 @@ export default function CreateArticle() {
     canonicalUrl: "",
     tags: [],
   });
+
+  // Once the person edits the slug directly, stop overwriting it when the
+  // title changes — respect their manual override.
+  const [slugTouched, setSlugTouched] = useState(false);
 
   const [toast, setToast] = useState({
     show: false,
@@ -67,18 +72,24 @@ export default function CreateArticle() {
   }, [form.brandId]);
 
   const handleChange = (e) => {
-    setForm({
-      ...form,
-      [e.target.name]: e.target.value,
-    });
-  };
+    const { name, value } = e.target;
 
-  const generateSlug = (title) =>
-    title
-      .toLowerCase()
-      .trim()
-      .replace(/\s+/g, "-")
-      .replace(/[^\w-]+/g, "");
+    if (name === "slug") {
+      setSlugTouched(true);
+      setForm((prev) => ({ ...prev, slug: value }));
+      return;
+    }
+
+    setForm((prev) => ({
+      ...prev,
+      [name]: value,
+      // Auto-fill the slug as the title is typed, unless the person has
+      // already edited the slug field directly.
+      ...(name === "title" && !slugTouched
+        ? { slug: slugify(value) }
+        : {}),
+    }));
+  };
 
   const calculateReadingTime = (html) => {
     const words = html.replace(/<[^>]*>/g, "").split(/\s+/).length;
@@ -92,7 +103,7 @@ export default function CreateArticle() {
 
       const payload = {
         title: form.title,
-        slug: generateSlug(form.title),
+        slug: form.slug || slugify(form.title),
 
         brandId: Number(form.brandId),
         categoryId: Number(form.categoryId),
@@ -127,7 +138,8 @@ export default function CreateArticle() {
         message: "Article Saved Successfully!",
       });
 
-      // navigate("/articles");
+      // TODO: re-add redirect (e.g. useNavigate -> navigate("/articles"))
+      // once the post-save flow is finalized.
     } catch (error) {
       console.error(error.response?.data || error);
 
@@ -141,36 +153,86 @@ export default function CreateArticle() {
 
   return (
     <div className="flex flex-col gap-6">
+      <PageHeader
+        title="Create New Article"
+        breadcrumb={[
+          { label: "Dashboard", path: "/" },
+          { label: "Articles", path: "/articles" },
+          { label: "Create" },
+        ]}
+      />
+
       <div className="grid grid-cols-[1fr_260px] gap-4">
+        <div>
+          <label className="os-label">
+            Article Title <span className="text-red-600">*</span>
+          </label>
+
+          <input
+            name="title"
+            value={form.title}
+            onChange={handleChange}
+            placeholder="Enter article title..."
+            className="os-input"
+          />
+        </div>
+
+        <div>
+          <label className="os-label">
+            Select Brand <span className="text-red-600">*</span>
+          </label>
+
+          <BrandSelect
+            brands={brands}
+            value={form.brandId}
+            onChange={handleChange}
+          />
+        </div>
+      </div>
+
+      <div>
+        <label className="os-label">
+          Slug <span className="text-red-600">*</span>
+        </label>
+
         <input
-          name="title"
-          value={form.title}
+          name="slug"
+          value={form.slug}
           onChange={handleChange}
-          placeholder="Add New Article Title"
-          className="w-full text-3xl font-bold bg-transparent border-b border-[#B08968] pb-2 outline-none"
+          placeholder="Enter slug (URL friendly)"
+          className="os-input"
         />
 
-        <BrandSelect
-          brands={brands}
-          value={form.brandId}
+        <p className="text-xs opacity-60 mt-1">
+          The slug is used in the article URL. Use lowercase letters,
+          numbers, and hyphens.
+        </p>
+      </div>
+
+      <div>
+        <label className="os-label">Excerpt</label>
+
+        <textarea
+          name="excerpt"
+          value={form.excerpt}
           onChange={handleChange}
+          placeholder="Write a short excerpt for your article..."
+          className="os-input"
+          rows={3}
         />
+
+        <p className="text-xs opacity-60 mt-1">
+          A brief summary of the article (optional).
+        </p>
       </div>
 
       <div className="grid grid-cols-[1fr_320px] gap-6 min-h-[70vh]">
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-2">
+          <label className="os-label">
+            Content <span className="text-red-600">*</span>
+          </label>
+
           <ArticleEditor content={content} setContent={setContent} />
-
-          <div className="os-card">
-            <h3 className="font-semibold mb-2">Excerpt</h3>
-
-            <textarea
-              name="excerpt"
-              value={form.excerpt}
-              onChange={handleChange}
-              className="os-input"
-            />
-          </div>
         </div>
 
         <div className="flex flex-col gap-4">
@@ -197,22 +259,35 @@ export default function CreateArticle() {
           <div className="os-card">
             <h3 className="font-semibold mb-3">Taxonomy</h3>
 
+            <label className="os-label">
+              Category <span className="text-red-600">*</span>
+            </label>
             <CategorySelect
               categories={categories}
               value={form.categoryId}
               onChange={handleChange}
             />
+            <p className="text-xs opacity-60 mt-1 mb-3">
+              Choose the primary category for this article.
+            </p>
 
+            <label className="os-label">Tags</label>
             <InputTags
               tags={form.tags}
               tagInput={tagInput}
               setTagInput={setTagInput}
               setForm={setForm}
             />
+            <p className="text-xs opacity-60 mt-1">
+              Add relevant tags to help organize your article.
+            </p>
           </div>
 
           <div className="os-card">
-            <h3 className="font-semibold mb-3">Media</h3>
+            <h3 className="font-semibold mb-1">Featured Image</h3>
+            <p className="text-xs opacity-60 mb-3">
+              Upload a thumbnail and cover image for your article.
+            </p>
 
             <UploadBox
               label="Thumbnail"
@@ -228,7 +303,7 @@ export default function CreateArticle() {
           </div>
 
           <div className="os-card">
-            <h3 className="font-semibold mb-3">SEO</h3>
+            <h3 className="font-semibold mb-3">SEO Settings</h3>
 
             <input
               name="seoTitle"

@@ -5,11 +5,13 @@ import { Pencil, Trash2 } from "lucide-react";
 import ArticleCard from "./components/ArticleCard";
 import DataToolbar from "../../components/shared/ui/DataToolbar";
 import DataTable from "../../components/shared/ui/DataTable";
+import PageHeader from "../../components/shared/layout/PageHeader";
 
 import Alert from "../../components/shared/feedback/Alert";
 import Toast from "../../components/shared/feedback/Toast";
 import EmptyState from "../../components/shared/feedback/EmptyState";
 import ConfirmDialog from "../../components/shared/feedback/ConfirmDialog";
+import Badge from "../../components/shared/ui/Badge";
 
 import useSearch from "../../hooks/useSearch";
 
@@ -101,7 +103,11 @@ export default function Articles() {
       render: (row) => row.category?.name,
     },
 
-    { key: "status", label: "Status" },
+    {
+      key: "status",
+      label: "Status",
+      render: (row) => <Badge status={row.status} label={row.status} />,
+    },
     { key: "author", label: "Author" },
 
     {
@@ -129,13 +135,15 @@ export default function Articles() {
 
       {/* HEADER */}
 
-      <div className="flex justify-between mb-6">
-        <h1 className="text-2xl font-bold">Articles</h1>
-
-        <Link to="/articles/create" className="os-btn-primary">
-          + Create Scroll
-        </Link>
-      </div>
+      <PageHeader
+        title="Articles"
+        breadcrumb={[{ label: "Dashboard", path: "/" }, { label: "Articles" }]}
+        action={
+          <Link to="/articles/create" className="os-btn-primary">
+            + Create Scroll
+          </Link>
+        }
+      />
 
       {/* TOOLBAR */}
 
@@ -172,7 +180,9 @@ export default function Articles() {
       {/* TABLE VIEW */}
 
       {view === "table" && filteredData.length > 0 && (
-        <DataTable columns={columns} data={filteredData} />
+        <div className="os-card">
+          <DataTable columns={columns} data={filteredData} />
+        </div>
       )}
 
       {/* CONFIRM DELETE */}

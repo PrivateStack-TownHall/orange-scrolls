@@ -3,13 +3,21 @@ import { Pencil, Trash } from "lucide-react";
 
 export default function ArticleHeader({ article, onDelete }) {
   return (
-    <div className="flex justify-between items-start mb-6">
-      <h1 className="text-4xl font-bold">{article.title}</h1>
+    <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-4">
+      <div className="flex items-start gap-3">
+        <img
+          src="/icons/feather-pen.png"
+          alt=""
+          aria-hidden="true"
+          className="w-9 h-9 object-contain shrink-0 mt-1 -rotate-6"
+        />
+        <h1 className="text-4xl font-bold leading-tight">{article.title}</h1>
+      </div>
 
-      <div className="flex gap-3">
+      <div className="flex gap-2 shrink-0">
         <Link
-          to={`/articles/edit/${article.slug}`}
-          className="flex items-center gap-2 px-4 py-2 text-sm bg-blue-600 text-white rounded hover:bg-blue-700"
+          to={`/articles/${article.id}/edit`}
+          className="os-btn-secondary flex items-center gap-2"
         >
           <Pencil className="w-4 h-4" />
           Edit
@@ -17,7 +25,7 @@ export default function ArticleHeader({ article, onDelete }) {
 
         <button
           onClick={onDelete}
-          className="flex items-center gap-2 px-4 py-2 text-sm bg-red-600 text-white rounded hover:bg-red-700"
+          className="flex items-center gap-2 px-4 py-2 text-sm rounded font-medium bg-red-600 text-white hover:bg-red-700 transition"
         >
           <Trash className="w-4 h-4" />
           Delete

@@ -1,10 +1,54 @@
 /* =========================
+   FONTS — JetBrains Mono
+========================= */
+
+@font-face {
+  font-family: "JetBrains Mono";
+  src: url("/fonts/webfonts/JetBrainsMono-Regular.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "JetBrains Mono";
+  src: url("/fonts/webfonts/JetBrainsMono-Italic.woff2") format("woff2");
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "JetBrains Mono";
+  src: url("/fonts/webfonts/JetBrainsMono-Medium.woff2") format("woff2");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "JetBrains Mono";
+  src: url("/fonts/webfonts/JetBrainsMono-SemiBold.woff2") format("woff2");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "JetBrains Mono";
+  src: url("/fonts/webfonts/JetBrainsMono-Bold.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* =========================
    ORANGE SCROLLS VARIABLES
 ========================= */
 
 :root {
   /* Font */
-  --os-font-main: "Consolas", ui-monospace, monospace;
+  --os-font-main: "JetBrains Mono", ui-monospace, monospace;
 
   /* Background */
   --os-bg-main: #f4e6c3;
@@ -37,6 +81,11 @@
 
   /* Code */
   --os-code-bg: #1f2937;
+
+  /* Backgrounds (images) */
+  --os-bg-main-image: url("/backgrounds/main-background.png");
+  --os-card-parchment-image: url("/backgrounds/card-parchment-paper.png");
+  --os-card-parchment-portrait-image: url("/backgrounds/card-parchment-paper-portrait.png");
 }
 /* =========================
    MODERN THEME

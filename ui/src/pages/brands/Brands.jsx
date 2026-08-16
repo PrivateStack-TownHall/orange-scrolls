@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { Pencil, Trash2, FileText, Tag, Layers, Image } from "lucide-react";
+import { Pencil } from "lucide-react";
 
 import DataToolbar from "../../components/shared/ui/DataToolbar";
 import DataTable from "../../components/shared/ui/DataTable";
+import PageHeader from "../../components/shared/layout/PageHeader";
+import BrandCard from "../../components/shared/ui/BrandCard";
 
 import PopUp from "../../components/shared/feedback/PopUp";
 import ConfirmDialog from "../../components/shared/feedback/ConfirmDialog";
@@ -22,7 +24,6 @@ import {
   getMedia,
   deleteBrand,
 } from "../../services";
-import BrandCard from "../../components/shared/ui/BrandCard";
 
 export default function Brands() {
   const [brands, setBrands] = useState([]);
@@ -46,13 +47,20 @@ export default function Brands() {
 
   // FETCH DATA
   useEffect(() => {
+    let ignore = false;
+
     const fetchData = async () => {
       try {
-        const brandsData = await getBrands();
-        const articlesData = await getArticles();
-        const categoriesData = await getCategories();
-        const tagsData = await getTags();
-        const mediaData = await getMedia();
+        const [brandsData, articlesData, categoriesData, tagsData, mediaData] =
+          await Promise.all([
+            getBrands(),
+            getArticles(),
+            getCategories(),
+            getTags(),
+            getMedia(),
+          ]);
+
+        if (ignore) return;
 
         setBrands(brandsData);
         setArticles(articlesData);
@@ -62,11 +70,15 @@ export default function Brands() {
       } catch (err) {
         console.error("Failed to fetch brands:", err);
       } finally {
-        setLoading(false);
+        if (!ignore) setLoading(false);
       }
     };
 
     fetchData();
+
+    return () => {
+      ignore = true;
+    };
   }, []);
 
   const { query, setQuery, filteredData } = useSearch(brands, ["name"]);
@@ -95,21 +107,66 @@ export default function Brands() {
   };
 
   const columns = [
-    { key: "id", label: "ID" },
+    { key: "id", label: "#" },
 
-    { key: "name", label: "Brand Name" },
+    {
+      key: "name",
+      label: "Brand",
+      render: (row) => (
+        <span className="flex items-center gap-2 font-medium">
+          <img
+            src={row.logoImage || "/icons/shield_feather.png"}
+            alt=""
+            className="w-6 h-6 object-contain"
+          />
+          {row.name}
+        </span>
+      ),
+    },
+
+    {
+      key: "articles",
+      label: "Articles",
+      render: (row) => articles.filter((a) => a.brandId === row.id).length,
+    },
+
+    {
+      key: "status",
+      label: "Status",
+      render: () => (
+        <span className="os-status-pill os-status-active">Active</span>
+      ),
+    },
+
+    {
+      key: "createdAt",
+      label: "Created At",
+      render: (row) => new Date(row.createdAt).toLocaleDateString(),
+    },
 
     {
       key: "actions",
       label: "Actions",
       render: (row) => (
-        <div className="flex gap-3">
-          <Link to={`/brands/${row.id}/edit`}>
-            <Pencil size={16} />
+        <div className="flex items-center gap-2">
+          <Link
+            to={`/brands/${row.id}/edit`}
+            className="p-1.5 rounded border border-[var(--os-border-soft)] hover:bg-[var(--os-nav-hover)] inline-flex"
+            aria-label="Edit brand"
+          >
+            <Pencil size={14} />
           </Link>
 
-          <button onClick={() => setDeleteTarget(row)} className="text-red-600">
-            <Trash2 size={16} />
+          <button
+            onClick={() => setDeleteTarget(row)}
+            className="p-1.5 rounded border border-[var(--os-border-soft)] hover:bg-[var(--os-nav-hover)]"
+            aria-label="Delete brand"
+          >
+            <img
+              src="/icons/torn_scroll.png"
+              alt=""
+              className="w-3.5 h-3.5 object-contain"
+            />
           </button>
         </div>
       ),
@@ -124,13 +181,15 @@ export default function Brands() {
     <div>
       {/* HEADER */}
 
-      <div className="flex justify-between mb-6">
-        <h1 className="text-2xl font-bold">Brands</h1>
-
-        <button onClick={() => setOpenCreate(true)} className="os-btn-primary">
-          + Create Brand
-        </button>
-      </div>
+      <PageHeader
+        title="Brands"
+        breadcrumb={[{ label: "Dashboard", path: "/" }, { label: "Brands" }]}
+        action={
+          <button onClick={() => setOpenCreate(true)} className="os-btn-primary">
+            + Create Brand
+          </button>
+        }
+      />
 
       {/* TOOLBAR */}
 
@@ -183,7 +242,9 @@ export default function Brands() {
       {/* TABLE VIEW */}
 
       {view === "table" && filteredData.length > 0 && (
-        <DataTable columns={columns} data={filteredData} />
+        <div className="os-card">
+          <DataTable columns={columns} data={filteredData} />
+        </div>
       )}
 
       {/* CREATE BRAND POPUP */}
@@ -202,6 +263,8 @@ export default function Brands() {
               type: "success",
               message: "Brand created",
             });
+
+            getBrands().then(setBrands);
           }}
         />
       </PopUp>
