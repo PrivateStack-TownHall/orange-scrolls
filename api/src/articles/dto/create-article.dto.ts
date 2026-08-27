@@ -3,34 +3,53 @@ import {
    IsInt,
    IsOptional,
    IsString,
-   IsArray
+   IsArray,
+   IsNotEmpty,
+   IsIn
 } from 'class-validator'
+import { Type } from 'class-transformer'
+
+// Kept as plain string literals instead of importing the Prisma-generated
+// ArticleStatus/ArticleVisibility enums: those decorators run the moment
+// this module is imported, so if `npx prisma generate` hasn't produced a
+// client yet (fresh clone, CI cache miss, etc.) the whole API crashes on
+// boot with "Cannot convert undefined or null to object" instead of a
+// normal startup error. This keeps DTO validation independent of codegen
+// timing while still matching the ArticleStatus/ArticleVisibility enums
+// defined in schema.prisma.
+const ARTICLE_STATUS_VALUES = ['Draft', 'Published', 'Archived'] as const
+const ARTICLE_VISIBILITY_VALUES = ['Public', 'Private'] as const
+
+type ArticleStatusValue = (typeof ARTICLE_STATUS_VALUES)[number]
+type ArticleVisibilityValue = (typeof ARTICLE_VISIBILITY_VALUES)[number]
 
 export class CreateArticleDto {
 
-   @IsOptional()
+   @IsNotEmpty()
    @IsString()
-   title?: string
+   title: string
 
-   @IsOptional()
+   @IsNotEmpty()
    @IsString()
-   slug?: string
+   slug: string
 
-   @IsOptional()
+   @IsNotEmpty()
+   @Type(() => Number)
    @IsInt()
-   brandId?: number
+   brandId: number
 
-   @IsOptional()
+   @IsNotEmpty()
+   @Type(() => Number)
    @IsInt()
-   categoryId?: number
+   categoryId: number
 
    @IsOptional()
    @IsString()
    excerpt?: string
 
-   @IsOptional()
+   @IsNotEmpty()
    @IsString()
-   content?: string
+   content: string
 
    @IsOptional()
    @IsString()
@@ -44,13 +63,13 @@ export class CreateArticleDto {
    @IsString()
    author?: string
 
-   @IsOptional()
-   @IsString()
-   status?: string
+   @IsNotEmpty()
+   @IsIn(ARTICLE_STATUS_VALUES)
+   status: ArticleStatusValue
 
-   @IsOptional()
-   @IsString()
-   visibility?: string
+   @IsNotEmpty()
+   @IsIn(ARTICLE_VISIBILITY_VALUES)
+   visibility: ArticleVisibilityValue
 
    @IsOptional()
    @IsBoolean()

@@ -173,8 +173,18 @@ describe('ArticlesService', () => {
     await expect(service.findOneBySlug('missing')).rejects.toBeInstanceOf(NotFoundException)
   })
 
-  it('findOneBySlug() should return article with tags flattened to tag objects', async () => {
-    ;(prisma.article.findUnique as jest.Mock).mockResolvedValueOnce({
+  // NOTE: this originally asserted that tags get flattened to plain
+  // { id, name } objects. That's deliberately NOT what the service does —
+  // ArticleTags.jsx (the component that renders tags on the article detail
+  // page) reads `item.tag.name` / `item.tagId`, i.e. the raw ArticleTag
+  // join-row shape. Flattening here would silently break that UI, so the
+  // service keeps returning the nested `{ tag: { id, name } }` shape and
+  // this test now asserts that instead. Also switched the mock from
+  // `findUnique` to `findFirst`, since findOneBySlug uses findFirst — slug
+  // is only unique per-brand (@@unique([slug, brandId])), not globally, so
+  // findUnique can't be used for a bare slug lookup.
+  it('findOneBySlug() should return the article with its tag join rows intact', async () => {
+    ;(prisma.article.findFirst as jest.Mock).mockResolvedValueOnce({
       id: 1,
       slug: 's',
       brand: {},
@@ -187,8 +197,8 @@ describe('ArticlesService', () => {
 
     const res = await service.findOneBySlug('s')
     expect(res.tags).toEqual([
-      { id: 1, name: 'a' },
-      { id: 2, name: 'b' },
+      { tag: { id: 1, name: 'a' } },
+      { tag: { id: 2, name: 'b' } },
     ])
   })
 
