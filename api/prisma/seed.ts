@@ -107,6 +107,28 @@ async function main() {
 
    console.log("Seed completed successfully")
 
+   // Explicit `id` values were used above (createMany + create with `id`),
+   // which does NOT advance Postgres's auto-increment sequence for each
+   // table. Without this, the very next INSERT that relies on the
+   // sequence (e.g. creating a category from the UI) collides with an id
+   // that already exists, throwing a P2002 "duplicate id" error that has
+   // nothing to do with the data actually being a duplicate.
+   console.log("Resyncing auto-increment sequences...")
+
+   const tables = ["Brand", "Category", "Tag", "Media", "Article"]
+
+   for (const table of tables) {
+      await prisma.$executeRawUnsafe(`
+         SELECT setval(
+            pg_get_serial_sequence('"${table}"', 'id'),
+            COALESCE((SELECT MAX(id) FROM "${table}"), 1),
+            true
+         )
+      `)
+   }
+
+   console.log("Sequences resynced")
+
 }
 
 main()

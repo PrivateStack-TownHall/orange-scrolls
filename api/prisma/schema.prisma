@@ -158,6 +158,11 @@ model Media {
   name String
   url  String
 
+  // Cloudinary's public_id — needed to delete the asset from Cloudinary
+  // later (cloudinary.uploader.destroy). Nullable so existing rows created
+  // before this column existed don't break.
+  publicId String?
+
   createdAt DateTime @default(now())
 
   articles ArticleMedia[]
