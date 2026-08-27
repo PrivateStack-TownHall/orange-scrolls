@@ -33,6 +33,12 @@ export const deleteArticle = async (id) => {
 
 // GET SINGLE ARTICLE BY SLUG
 export const getArticleBySlug = async (slug) => {
-  const res = await api.get(`/articles/slug/${slug}`);
+  // A missing article here is an expected, already-handled outcome (the
+  // page shows its own "Article not found" message) — skip the global
+  // error modal so a bad/old link doesn't pop up a scary dialog on top of
+  // that.
+  const res = await api.get(`/articles/slug/${slug}`, {
+    skipErrorModal: true,
+  });
   return res.data;
 };
