@@ -1,8 +1,11 @@
 import { useEffect, useState } from "react";
 import { getBrands, createCategory, updateCategory } from "../../services";
+import { slugify } from "../../utils/slugify";
 
 export default function CreateCategoryForm({ initialData, onSuccess }) {
   const [brands, setBrands] = useState([]);
+  const [error, setError] = useState("");
+  const [saving, setSaving] = useState(false);
 
   const isEditing = !!initialData;
 
@@ -30,13 +33,34 @@ export default function CreateCategoryForm({ initialData, onSuccess }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (isEditing) {
-      await updateCategory(initialData.id, form);
-    } else {
-      await createCategory(form);
-    }
+    // Backend requires `slug` and a numeric `brandId` — this form only
+    // collects a name, so derive the slug the same way CreateArticle.jsx
+    // does, and coerce brandId (a string from the <select>) to a number.
+    const payload = {
+      name: form.name,
+      slug: slugify(form.name),
+      brandId: Number(form.brandId),
+    };
 
-    onSuccess?.();
+    try {
+      setSaving(true);
+      setError("");
+
+      if (isEditing) {
+        await updateCategory(initialData.id, payload);
+      } else {
+        await createCategory(payload);
+      }
+
+      onSuccess?.();
+    } catch (err) {
+      console.error(err);
+      setError(
+        err.response?.data?.message || "Failed to save category"
+      );
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -74,9 +98,11 @@ export default function CreateCategoryForm({ initialData, onSuccess }) {
         </select>
       </div>
 
-      <button className="os-btn-primary">
-        {isEditing ? "Update Category" : "Save Category"}
+      <button className="os-btn-primary" disabled={saving}>
+        {saving ? "Saving..." : isEditing ? "Update Category" : "Save Category"}
       </button>
+
+      {error && <p className="text-xs text-red-600">{error}</p>}
     </form>
   );
 }

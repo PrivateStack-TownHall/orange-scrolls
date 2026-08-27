@@ -3,6 +3,8 @@ import { createTag, updateTag, getBrands } from "../../services";
 
 export default function CreateTagForm({ initialData, onSuccess }) {
   const [brands, setBrands] = useState([]);
+  const [error, setError] = useState("");
+  const [saving, setSaving] = useState(false);
 
   const isEditing = !!initialData;
 
@@ -31,13 +33,30 @@ export default function CreateTagForm({ initialData, onSuccess }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (isEditing) {
-      await updateTag(initialData.id, form);
-    } else {
-      await createTag(form);
-    }
+    // brandId comes out of a <select> as a string — the backend expects
+    // a real number.
+    const payload = {
+      name: form.name,
+      brandId: Number(form.brandId),
+    };
 
-    onSuccess?.();
+    try {
+      setSaving(true);
+      setError("");
+
+      if (isEditing) {
+        await updateTag(initialData.id, payload);
+      } else {
+        await createTag(payload);
+      }
+
+      onSuccess?.();
+    } catch (err) {
+      console.error(err);
+      setError(err.response?.data?.message || "Failed to save tag");
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -75,9 +94,11 @@ export default function CreateTagForm({ initialData, onSuccess }) {
         </select>
       </div>
 
-      <button className="os-btn-primary">
-        {isEditing ? "Update Tag" : "Save Tag"}
+      <button className="os-btn-primary" disabled={saving}>
+        {saving ? "Saving..." : isEditing ? "Update Tag" : "Save Tag"}
       </button>
+
+      {error && <p className="text-xs text-red-600">{error}</p>}
     </form>
   );
 }

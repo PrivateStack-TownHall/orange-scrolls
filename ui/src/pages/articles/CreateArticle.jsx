@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import ArticleEditor from "../../components/editors/TipTapEditor";
 import ArticlePopUpMedia from "./components/ArticlePopUpMedia";
 import { createArticle, getBrands, getCategories } from "../../services";
@@ -11,6 +12,7 @@ import PageHeader from "../../components/shared/layout/PageHeader";
 import { slugify } from "../../utils/slugify";
 
 export default function CreateArticle() {
+  const navigate = useNavigate();
   const [content, setContent] = useState("");
 
   const [brands, setBrands] = useState([]);
@@ -138,8 +140,12 @@ export default function CreateArticle() {
         message: "Article Saved Successfully!",
       });
 
-      // TODO: re-add redirect (e.g. useNavigate -> navigate("/articles"))
-      // once the post-save flow is finalized.
+      // Redirect back to the article list once the toast has had a moment
+      // to show — previously this was a TODO and the form just sat there
+      // with no feedback that navigation was intentionally skipped.
+      setTimeout(() => {
+        navigate("/articles");
+      }, 600);
     } catch (error) {
       console.error(error.response?.data || error);
 

@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { ChevronRight } from "lucide-react";
 
-import { getArticles, deleteArticle } from "../../services";
+import { getArticleBySlug, deleteArticle } from "../../services";
 
 import ArticleHeader from "./components/ArticleHeader";
 import ArticleMeta from "./components/ArticleMeta";
@@ -20,11 +20,17 @@ export default function ArticleDetail() {
     let ignore = false;
 
     const fetchArticle = async () => {
-      try {
-        const data = await getArticles();
-        const found = data.find((a) => a.slug === slug);
+      setLoading(true);
 
-        if (!ignore) setArticle(found ?? null);
+      try {
+        const data = await getArticleBySlug(slug);
+        if (!ignore) setArticle(data);
+      } catch (err) {
+        // getArticleBySlug throws (404) when the article doesn't exist —
+        // treat that the same as "not found" instead of leaving the page
+        // stuck on the loading state.
+        console.error(err);
+        if (!ignore) setArticle(null);
       } finally {
         if (!ignore) setLoading(false);
       }
