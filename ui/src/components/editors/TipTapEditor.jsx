@@ -1,9 +1,11 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useEditor, EditorContent } from "@tiptap/react";
 
 import StarterKit from "@tiptap/starter-kit";
 import Image from "@tiptap/extension-image";
 import Placeholder from "@tiptap/extension-placeholder";
+
+import { createMedia } from "../../services";
 
 import {
   Bold,
@@ -18,6 +20,7 @@ import {
   Undo,
   Redo,
   ImagePlus,
+  Upload,
   Underline as UnderlineIcon,
   Link as LinkIcon,
   Minus,
@@ -28,6 +31,31 @@ export default function ArticleEditor({ content, setContent }) {
   const [imageUrl, setImageUrl] = useState("");
   const [linkPopoverOpen, setLinkPopoverOpen] = useState(false);
   const [linkUrl, setLinkUrl] = useState("");
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const fileInputRef = useRef(null);
+
+  // Uploads a real image File (from the file picker, a drag-and-drop, or a
+  // pasted screenshot) through the same /media/upload -> Cloudinary
+  // pipeline the Featured Image picker uses, then inserts the resulting
+  // URL into the editor at the current cursor position.
+  const uploadAndInsertImage = async (file) => {
+    if (!file || !file.type?.startsWith("image/")) return;
+
+    try {
+      setUploadingImage(true);
+
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const media = await createMedia(formData);
+
+      editor?.chain().focus().setImage({ src: media.url }).run();
+    } catch (err) {
+      console.error("Image upload failed", err);
+    } finally {
+      setUploadingImage(false);
+    }
+  };
 
   // NOTE: Link, Underline, and HorizontalRule are already bundled inside
   // StarterKit (Tiptap v3). Registering them again as separate extensions
@@ -55,6 +83,18 @@ export default function ArticleEditor({ content, setContent }) {
 
     editorProps: {
       handlePaste(view, event) {
+        // A real image was pasted (e.g. a screenshot copied from the OS) —
+        // upload it instead of trying to read it as text.
+        const files = Array.from(event.clipboardData?.files || []).filter(
+          (f) => f.type?.startsWith("image/")
+        );
+
+        if (files.length) {
+          event.preventDefault();
+          files.forEach(uploadAndInsertImage);
+          return true;
+        }
+
         const text = event.clipboardData.getData("text/plain");
 
         // auto detect image url (also matches URLs with query strings, e.g. ?w=800)
@@ -67,6 +107,20 @@ export default function ArticleEditor({ content, setContent }) {
         }
 
         // allow normal html paste
+        return false;
+      },
+
+      handleDrop(view, event) {
+        const files = Array.from(event.dataTransfer?.files || []).filter(
+          (f) => f.type?.startsWith("image/")
+        );
+
+        if (files.length) {
+          event.preventDefault();
+          files.forEach(uploadAndInsertImage);
+          return true;
+        }
+
         return false;
       },
     },
@@ -351,6 +405,32 @@ export default function ArticleEditor({ content, setContent }) {
           >
             Add
           </button>
+
+          <span className="text-xs opacity-40">or</span>
+
+          <button
+            type="button"
+            aria-label="Upload image from device"
+            disabled={uploadingImage}
+            onClick={() => fileInputRef.current?.click()}
+            className="flex items-center gap-1 text-xs px-2 py-1 rounded border border-[var(--os-border-main)] hover:bg-[var(--os-nav-hover)] disabled:opacity-50"
+          >
+            <Upload size={14} />
+            {uploadingImage ? "Uploading..." : "Upload"}
+          </button>
+
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              uploadAndInsertImage(file);
+              // allow selecting the same file again later
+              e.target.value = "";
+            }}
+          />
         </div>
       </div>
 
