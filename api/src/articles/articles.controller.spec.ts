@@ -19,6 +19,7 @@ describe('ArticlesController', () => {
             findOneBySlug: jest.fn(),
             update: jest.fn(),
             remove: jest.fn(),
+            restore: jest.fn(),
           },
         },
         {
@@ -33,5 +34,19 @@ describe('ArticlesController', () => {
 
   it('should be defined', () => {
     expect(controller).toBeDefined();
+  });
+
+  it('delegates restore to the service', () => {
+    const service = (controller as any).service;
+    controller.restore(7);
+    expect(service.restore).toHaveBeenCalledWith(7);
+  });
+
+  it('lists deleted articles only for ?deleted=true', () => {
+    const service = (controller as any).service;
+    controller.findAll({});
+    expect(service.findAll).toHaveBeenLastCalledWith({ deleted: false });
+    controller.findAll({ deleted: 'true' });
+    expect(service.findAll).toHaveBeenLastCalledWith({ deleted: true });
   });
 });

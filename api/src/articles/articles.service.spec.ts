@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing'
 import { BadRequestException, NotFoundException } from '@nestjs/common'
 import { ArticlesService } from './articles.service'
 import { PrismaService } from '../../prisma/prisma.service'
+import { NotificationsService } from '../notifications/notifications.service'
 
 // Helper to build a fresh prisma mock per test
 const createPrismaMock = () => {
@@ -13,6 +14,14 @@ const createPrismaMock = () => {
       create: jest.fn(),
       update: jest.fn(),
       delete: jest.fn(),
+    },
+    articleMedia: {
+      findMany: jest.fn().mockResolvedValue([]),
+      createMany: jest.fn(),
+      deleteMany: jest.fn(),
+    },
+    media: {
+      findMany: jest.fn().mockResolvedValue([]),
     },
     brand: {
       findUnique: jest.fn(),
@@ -40,14 +49,17 @@ const createPrismaMock = () => {
 describe('ArticlesService', () => {
   let service: ArticlesService
   let prisma: jest.Mocked<PrismaService>
+  let notifications: { notify: jest.Mock }
 
   beforeEach(async () => {
     prisma = createPrismaMock()
+    notifications = { notify: jest.fn() }
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         ArticlesService,
         { provide: PrismaService, useValue: prisma },
+        { provide: NotificationsService, useValue: notifications },
       ],
     }).compile()
 
@@ -155,6 +167,8 @@ describe('ArticlesService', () => {
         content: 'Body',
         status: 'draft',
         visibility: 'public',
+        // no author supplied -> safe placeholder instead of a Prisma crash
+        author: 'Unassigned',
       },
     })
 
@@ -204,7 +218,7 @@ describe('ArticlesService', () => {
 
   // Behavior 5: update should prevent duplicate slug and re-attach tags
   it('update() should throw BadRequestException if slug duplicates another article', async () => {
-    ;(prisma.article.findUnique as jest.Mock).mockResolvedValueOnce({ id: 10 } as any) // existing target
+    ;(prisma.article.findFirst as jest.Mock).mockResolvedValueOnce({ id: 10 } as any) // existing target
 
     // cleanData has slug -> check duplicate
     ;(prisma.article.findFirst as jest.Mock).mockResolvedValueOnce({ id: 11 } as any)
@@ -215,11 +229,10 @@ describe('ArticlesService', () => {
   })
 
   it('update() should update data, clear and reattach tags', async () => {
-    // existing target
-    ;(prisma.article.findUnique as jest.Mock).mockResolvedValueOnce({ id: 10, brandId: 2 } as any)
-
-    // duplicate slug check -> none
-    ;(prisma.article.findFirst as jest.Mock).mockResolvedValueOnce(null as any)
+    // existing target (live article), then duplicate slug check -> none
+    ;(prisma.article.findFirst as jest.Mock)
+      .mockResolvedValueOnce({ id: 10, brandId: 2, status: 'Draft' } as any)
+      .mockResolvedValueOnce(null as any)
 
     // update
     ;(prisma.article.update as jest.Mock).mockResolvedValueOnce({ id: 10, brandId: 2 } as any)

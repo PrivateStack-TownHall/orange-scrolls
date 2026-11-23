@@ -5,7 +5,10 @@ import {
    IsString,
    IsArray,
    IsNotEmpty,
-   IsIn
+   IsIn,
+   IsDateString,
+   Min,
+   ValidateNested
 } from 'class-validator'
 import { Type } from 'class-transformer'
 
@@ -19,6 +22,22 @@ import { Type } from 'class-transformer'
 // defined in schema.prisma.
 const ARTICLE_STATUS_VALUES = ['Draft', 'Published', 'Archived'] as const
 const ARTICLE_VISIBILITY_VALUES = ['Public', 'Private'] as const
+
+// Roles a media item can play for an article (ArticleMedia.type).
+export const ARTICLE_MEDIA_TYPES = ['thumbnail', 'cover', 'gallery'] as const
+export type ArticleMediaTypeValue = (typeof ARTICLE_MEDIA_TYPES)[number]
+
+export class ArticleMediaItemDto {
+
+   @Type(() => Number)
+   @IsInt()
+   @Min(1)
+   mediaId: number
+
+   @IsIn(ARTICLE_MEDIA_TYPES)
+   type: ArticleMediaTypeValue
+
+}
 
 type ArticleStatusValue = (typeof ARTICLE_STATUS_VALUES)[number]
 type ArticleVisibilityValue = (typeof ARTICLE_VISIBILITY_VALUES)[number]
@@ -90,6 +109,25 @@ export class CreateArticleDto {
    @IsOptional()
    @IsString()
    canonicalUrl?: string
+
+   // ISO-8601 date-time. Set automatically when an article becomes Published
+   // and never cleared afterwards (kept as history).
+   @IsOptional()
+   @IsDateString()
+   publishedAt?: string
+
+   // ISO-8601 date-time for a planned publication. null/"" clears it.
+   @IsOptional()
+   @IsDateString()
+   scheduledAt?: string | null
+
+   // Full desired set of media relations. Omit to leave relations untouched;
+   // send [] to remove them all.
+   @IsOptional()
+   @IsArray()
+   @ValidateNested({ each: true })
+   @Type(() => ArticleMediaItemDto)
+   media?: ArticleMediaItemDto[]
 
    @IsOptional()
    @IsArray()

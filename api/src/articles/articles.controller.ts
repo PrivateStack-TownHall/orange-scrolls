@@ -5,12 +5,15 @@ import {
    Body,
    Param,
    Put,
-   Delete
+   Delete,
+   Query
 } from '@nestjs/common'
 
+import { ParsePositiveIntPipe } from '../common/pipes/parse-positive-int.pipe'
 import { ArticlesService } from './articles.service'
 import { CreateArticleDto } from './dto/create-article.dto'
 import { UpdateArticleDto } from './dto/update-article.dto'
+import { ListArticlesQueryDto } from './dto/list-articles-query.dto'
 
 @Controller('articles')
 export class ArticlesController {
@@ -22,9 +25,10 @@ export class ArticlesController {
       return this.service.create(body)
    }
 
+   // Live articles by default; ?deleted=true lists soft-deleted ones.
    @Get()
-   findAll() {
-      return this.service.findAll()
+   findAll(@Query() query: ListArticlesQueryDto) {
+      return this.service.findAll({ deleted: query.deleted === 'true' })
    }
 
    @Get('slug/:slug')
@@ -33,21 +37,27 @@ export class ArticlesController {
    }
 
    @Get(':id')
-   findOne(@Param('id') id: string) {
-      return this.service.findOne(Number(id))
+   findOne(@Param('id', ParsePositiveIntPipe) id: number) {
+      return this.service.findOne(id)
    }
 
    @Put(':id')
    update(
-      @Param('id') id: string,
+      @Param('id', ParsePositiveIntPipe) id: number,
       @Body() body: UpdateArticleDto
    ) {
-      return this.service.update(Number(id), body)
+      return this.service.update(id, body)
    }
 
+   // Soft delete (sets deletedAt). Undo with POST /articles/:id/restore.
    @Delete(':id')
-   remove(@Param('id') id: string) {
-      return this.service.remove(Number(id))
+   remove(@Param('id', ParsePositiveIntPipe) id: number) {
+      return this.service.remove(id)
+   }
+
+   @Post(':id/restore')
+   restore(@Param('id', ParsePositiveIntPipe) id: number) {
+      return this.service.restore(id)
    }
 
 }
