@@ -71,6 +71,16 @@ DATABASE_URL=postgresql://...          # your Supabase/Postgres connection strin
 SUPABASE_URL=https://xxxx.supabase.co
 SUPABASE_KEY=your_service_role_key
 SUPABASE_BUCKET=media
+
+# Cloudinary (media uploads)
+CLOUDINARY_CLOUD_NAME=your_cloud_name
+CLOUDINARY_API_KEY=your_api_key
+CLOUDINARY_API_SECRET=your_api_secret
+CLOUDINARY_FOLDER=orange-scrolls       # optional
+
+# Browser origins allowed to call the API (comma separated).
+# Unset: localhost only in development, CORS off when NODE_ENV=production.
+CORS_ORIGIN=http://localhost:5175
 ```
 
 Run migrations, then start the server:
@@ -138,7 +148,17 @@ Defined in `api/prisma/schema.prisma`:
 - **Category**, **Tag** — scoped per Brand
 - **ArticleTag**, **ArticleMedia** — join tables
 - **Media** — uploaded files (Supabase Storage)
-- **Notification**
+- **Notification** — created automatically when articles or media change (`entity` / `entityId` point at the record)
+
+### API behaviour notes
+
+- **Articles are soft-deleted.** `DELETE /articles/:id` sets `deletedAt`; deleted articles are hidden from every read and cannot be updated. `GET /articles?deleted=true` lists them and `POST /articles/:id/restore` brings one back.
+- **`publishedAt`** is set when an article becomes Published and is kept as history afterwards (Draft/Archived never clear it). A Published article cannot have a future `publishedAt` or `scheduledAt`.
+- **Media relations**: send `media: [{ mediaId, type: "thumbnail" | "cover" | "gallery" }]` on create/update. Omit the key to leave relations alone; `[]` removes them all.
+- **Deleting media** that articles still use returns `409` with the list of articles; repeat with `?force=true` to detach and delete.
+- **Notifications**: `GET /notifications[?unread=true]`, `GET /notifications/unread-count`, `PATCH /notifications/:id/read`, `PATCH /notifications/read-all`.
+- Every `:id` must be a positive integer (400 otherwise); missing records return 404; unique-constraint conflicts return 409.
+- Uploads accept PNG, JPEG, GIF and WebP up to 5 MB.
 
 ---
 
