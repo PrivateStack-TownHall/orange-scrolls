@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 
+import NotificationBell from "../components/notifications/NotificationBell";
+
 /**
  * Fixed top-right controls (theme toggle + notification bell), rendered
  * once from MainLayout so it stays put while page content scrolls —
@@ -59,35 +61,9 @@ export default function HeaderControls() {
         </select>
       </div>
 
-      {/* NOTIFICATIONS — no notification system exists yet, so this
-          stays honestly disabled rather than showing a fake count. */}
+      {/* NOTIFICATIONS */}
 
-      <button
-        disabled
-        title="Notifications — coming soon"
-        className="relative p-2 rounded opacity-60 cursor-not-allowed"
-      >
-        <img
-          src="/icons/bell_ribbon.png"
-          alt="Notifications (coming soon)"
-          className="w-6 h-6 object-contain"
-        />
-
-        <span
-          className="
-            absolute
-            -top-1
-            -right-1
-            text-[9px]
-            bg-orange-500
-            text-white
-            px-1
-            rounded
-          "
-        >
-          Soon
-        </span>
-      </button>
+      <NotificationBell />
     </div>
   );
 }

@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Palette } from "lucide-react";
 
+import NotificationBell from "../components/notifications/NotificationBell";
+
 const BRANDS = [
   { id: 1, name: "Orange Kode" },
   { id: 2, name: "Sadino Technology" },
@@ -112,17 +114,7 @@ export default function TopBar() {
 
         {/* NOTIFICATIONS */}
 
-        <button
-          disabled
-          title="Notifications (coming soon)"
-          className="relative p-1.5 rounded-full opacity-70 cursor-not-allowed"
-        >
-          <img
-            src="/icons/bell_ribbon.png"
-            alt="Notifications"
-            className="w-7 h-7 object-contain"
-          />
-        </button>
+        <NotificationBell iconClassName="w-7 h-7" />
       </div>
     </header>
   );

@@ -29,6 +29,8 @@ import EditTag from "../pages/tags/EditTag";
 // Media
 import MediaLibrary from "../pages/media/MediaLibrary";
 
+import NotFound from "../pages/NotFound";
+
 export const router = createBrowserRouter([
   {
     path: "/",
@@ -107,6 +109,12 @@ export const router = createBrowserRouter([
       {
         path: "tags/:id/edit",
         element: <EditTag />,
+      },
+
+      // ANYTHING ELSE
+      {
+        path: "*",
+        element: <NotFound />,
       },
     ],
   },
