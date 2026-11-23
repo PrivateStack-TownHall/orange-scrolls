@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common'
+import { Injectable, NotFoundException } from '@nestjs/common'
 import { PrismaService } from '../../prisma/prisma.service'
 import { CreateTagDto } from './dto/create-tag.dto'
 import { UpdateTagDto } from './dto/update-tag.dto'
@@ -26,12 +26,16 @@ export class TagsService {
    }
 
    async findOne(id: number) {
-      return this.prisma.tag.findUnique({
+      const record = await this.prisma.tag.findUnique({
          where: { id },
          include: {
             brand: true
          }
       })
+
+      if (!record) throw new NotFoundException("Tag not found")
+
+      return record
    }
 
    async update(id: number, data: UpdateTagDto) {

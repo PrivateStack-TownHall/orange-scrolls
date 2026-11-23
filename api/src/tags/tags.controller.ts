@@ -8,6 +8,8 @@ import {
    Delete
 } from '@nestjs/common'
 
+import { ParsePositiveIntPipe } from '../common/pipes/parse-positive-int.pipe'
+
 import { TagsService } from './tags.service'
 import { CreateTagDto } from './dto/create-tag.dto'
 import { UpdateTagDto } from './dto/update-tag.dto'
@@ -31,23 +33,23 @@ export class TagsController {
 
    // GET ONE
    @Get(':id')
-   findOne(@Param('id') id: string) {
-      return this.service.findOne(Number(id))
+   findOne(@Param('id', ParsePositiveIntPipe) id: number) {
+      return this.service.findOne(id)
    }
 
    // UPDATE
    @Put(':id')
    update(
-      @Param('id') id: string,
+      @Param('id', ParsePositiveIntPipe) id: number,
       @Body() body: UpdateTagDto
    ) {
-      return this.service.update(Number(id), body)
+      return this.service.update(id, body)
    }
 
    // DELETE
    @Delete(':id')
-   remove(@Param('id') id: string) {
-      return this.service.remove(Number(id))
+   remove(@Param('id', ParsePositiveIntPipe) id: number) {
+      return this.service.remove(id)
    }
 
 }
