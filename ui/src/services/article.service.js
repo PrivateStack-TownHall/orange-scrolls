@@ -1,8 +1,12 @@
 import { api } from "./api";
 
 // GET ALL ARTICLES
-export const getArticles = async () => {
-  const res = await api.get("/articles");
+// By default only live articles come back. `{ deleted: true }` returns the
+// soft-deleted ones instead (the "Deleted" view, used to restore).
+export const getArticles = async ({ deleted = false } = {}) => {
+  const res = await api.get("/articles", {
+    params: deleted ? { deleted: "true" } : undefined,
+  });
   return res.data;
 };
 
@@ -13,21 +17,28 @@ export const getArticleById = async (id) => {
 };
 
 // CREATE ARTICLE
-export const createArticle = async (data) => {
-  const res = await api.post("/articles", data);
-  console.log("Creating article with data:", data);
+// `config` is passed to axios, e.g. `{ skipErrorModal: true }` when the page
+// shows the error itself (inline field errors + toast).
+export const createArticle = async (data, config) => {
+  const res = await api.post("/articles", data, config);
   return res.data;
 };
 
 // UPDATE ARTICLE
-export const updateArticle = async (id, data) => {
-  const res = await api.put(`/articles/${id}`, data);
+export const updateArticle = async (id, data, config) => {
+  const res = await api.put(`/articles/${id}`, data, config);
   return res.data;
 };
 
-// DELETE ARTICLE
-export const deleteArticle = async (id) => {
-  const res = await api.delete(`/articles/${id}`);
+// DELETE ARTICLE (soft delete — the article can be restored)
+export const deleteArticle = async (id, config) => {
+  const res = await api.delete(`/articles/${id}`, config);
+  return res.data;
+};
+
+// RESTORE A SOFT-DELETED ARTICLE
+export const restoreArticle = async (id, config) => {
+  const res = await api.post(`/articles/${id}/restore`, null, config);
   return res.data;
 };
 
