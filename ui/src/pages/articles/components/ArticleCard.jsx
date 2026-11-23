@@ -1,8 +1,14 @@
 import { Link } from "react-router-dom";
-import { Pencil, Eye } from "lucide-react";
+import { Pencil, Eye, RotateCcw } from "lucide-react";
 import Badge from "../../../components/shared/ui/Badge";
 
-export default function ArticleCard({ article, setDeleteTarget }) {
+export default function ArticleCard({
+  article,
+  setDeleteTarget,
+  onRestore,
+  isDeleted = false,
+  busy = false,
+}) {
   return (
     <div className="os-card-portrait os-card-flush os-hover-lift animate-in-fade overflow-hidden flex flex-col">
       {/* THUMBNAIL */}
@@ -10,7 +16,9 @@ export default function ArticleCard({ article, setDeleteTarget }) {
         <img
           src={article.thumbnail}
           alt={article.title}
-          className="w-full h-40 object-cover p-2 border-md"
+          className={`w-full h-40 object-cover p-2 border-md ${
+            isDeleted ? "grayscale opacity-60" : ""
+          }`}
         />
       ) : (
         <div className="w-full h-40 bg-[var(--os-nav-hover)] flex items-center justify-center text-xs opacity-60">
@@ -50,33 +58,54 @@ export default function ArticleCard({ article, setDeleteTarget }) {
 
         {/* ACTIONS */}
         <div className="flex justify-end gap-3 text-xs mt-3">
-          <Link
-            to={`/articles/${article.slug}`}
-            className="flex items-center gap-1 text-blue-600 opacity-70 hover:opacity-100"
-          >
-            <Eye size={14} />
-            View
-          </Link>
+          {isDeleted ? (
+            // Deleted articles can't be viewed or edited — only restored.
+            <button
+              type="button"
+              onClick={() => onRestore?.(article)}
+              disabled={busy}
+              aria-label={`Restore ${article.title}`}
+              className="flex items-center gap-1 text-green-700 opacity-80 hover:opacity-100 disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              <RotateCcw size={14} aria-hidden="true" />
+              {busy ? "Restoring..." : "Restore"}
+            </button>
+          ) : (
+            <>
+              <Link
+                to={`/articles/${article.slug}`}
+                aria-label={`View ${article.title}`}
+                className="flex items-center gap-1 text-blue-600 opacity-70 hover:opacity-100"
+              >
+                <Eye size={14} aria-hidden="true" />
+                View
+              </Link>
 
-          <Link
-            to={`/articles/${article.id}/edit`}
-            className="flex items-center gap-1 opacity-70 hover:opacity-100"
-          >
-            <Pencil size={14} />
-            Edit
-          </Link>
+              <Link
+                to={`/articles/${article.id}/edit`}
+                aria-label={`Edit ${article.title}`}
+                className="flex items-center gap-1 opacity-70 hover:opacity-100"
+              >
+                <Pencil size={14} aria-hidden="true" />
+                Edit
+              </Link>
 
-          <button
-            onClick={() => setDeleteTarget(article)}
-            className="flex items-center gap-1 text-red-600 opacity-70 hover:opacity-100"
-          >
-            <img
-              src="/icons/torn_scroll.png"
-              alt=""
-              className="w-4 h-4 object-contain"
-            />
-            Delete
-          </button>
+              <button
+                type="button"
+                onClick={() => setDeleteTarget(article)}
+                disabled={busy}
+                aria-label={`Delete ${article.title}`}
+                className="flex items-center gap-1 text-red-600 opacity-70 hover:opacity-100 disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                <img
+                  src="/icons/torn_scroll.png"
+                  alt=""
+                  className="w-4 h-4 object-contain"
+                />
+                Delete
+              </button>
+            </>
+          )}
         </div>
       </div>
     </div>

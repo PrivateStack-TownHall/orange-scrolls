@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { Pencil, Trash } from "lucide-react";
 
-export default function ArticleHeader({ article, onDelete }) {
+export default function ArticleHeader({ article, onDelete, deleting = false }) {
   return (
     <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-4">
       <div className="flex items-start gap-3">
@@ -19,16 +19,18 @@ export default function ArticleHeader({ article, onDelete }) {
           to={`/articles/${article.id}/edit`}
           className="os-btn-secondary flex items-center gap-2"
         >
-          <Pencil className="w-4 h-4" />
+          <Pencil className="w-4 h-4" aria-hidden="true" />
           Edit
         </Link>
 
         <button
+          type="button"
           onClick={onDelete}
-          className="flex items-center gap-2 px-4 py-2 text-sm rounded font-medium bg-red-600 text-white hover:bg-red-700 transition"
+          disabled={deleting}
+          className="flex items-center gap-2 px-4 py-2 text-sm rounded font-medium bg-red-600 text-white hover:bg-red-700 transition disabled:opacity-60 disabled:cursor-not-allowed"
         >
-          <Trash className="w-4 h-4" />
-          Delete
+          <Trash className="w-4 h-4" aria-hidden="true" />
+          {deleting ? "Deleting..." : "Delete"}
         </button>
       </div>
     </div>

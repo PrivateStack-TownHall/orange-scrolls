@@ -4,6 +4,9 @@ import { ChevronRight } from "lucide-react";
 
 import { getArticleBySlug, deleteArticle } from "../../services";
 
+import ConfirmDialog from "../../components/shared/feedback/ConfirmDialog";
+import Toast from "../../components/shared/feedback/Toast";
+
 import ArticleHeader from "./components/ArticleHeader";
 import ArticleMeta from "./components/ArticleMeta";
 import ArticleTags from "./components/ArticleTags";
@@ -15,6 +18,10 @@ export default function ArticleDetail() {
 
   const [article, setArticle] = useState(null);
   const [loading, setLoading] = useState(true);
+
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [toast, setToast] = useState({ show: false, type: "error", message: "" });
 
   useEffect(() => {
     let ignore = false;
@@ -44,11 +51,27 @@ export default function ArticleDetail() {
   }, [slug]);
 
   const handleDelete = async () => {
-    if (!confirm("Delete this article?")) return;
+    if (deleting) return;
 
-    await deleteArticle(article.id);
+    try {
+      setDeleting(true);
 
-    navigate("/articles");
+      // Soft delete: the article moves to the "Deleted" view of the list
+      // and can be restored from there.
+      await deleteArticle(article.id, { skipErrorModal: true });
+
+      navigate("/articles");
+    } catch (err) {
+      console.error(err);
+
+      setConfirmOpen(false);
+      setToast({
+        show: true,
+        type: "error",
+        message: err.response?.data?.message || "Failed to delete article",
+      });
+      setDeleting(false);
+    }
   };
 
   if (loading) {
@@ -84,7 +107,11 @@ export default function ArticleDetail() {
         <span className="font-medium">{article.title}</span>
       </nav>
 
-      <ArticleHeader article={article} onDelete={handleDelete} />
+      <ArticleHeader
+        article={article}
+        onDelete={() => setConfirmOpen(true)}
+        deleting={deleting}
+      />
 
       <ArticleMeta article={article} />
 
@@ -106,6 +133,25 @@ export default function ArticleDetail() {
       </div>
 
       <ArticleInfo article={article} />
+
+      <ConfirmDialog
+        isOpen={confirmOpen}
+        title="Delete Article"
+        message="This hides the article from the site and the article list. You can restore it later from the Deleted view on the Articles page."
+        confirmText="Delete"
+        cancelText="Cancel"
+        loading={deleting}
+        loadingText="Deleting..."
+        onConfirm={handleDelete}
+        onCancel={() => setConfirmOpen(false)}
+      />
+
+      <Toast
+        show={toast.show}
+        type={toast.type}
+        message={toast.message}
+        onClose={() => setToast((prev) => ({ ...prev, show: false }))}
+      />
     </div>
   );
 }

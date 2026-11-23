@@ -43,8 +43,13 @@ function InputTags({ tags, tagInput, setTagInput, setForm }) {
         >
           {tag}
 
-          <button onClick={() => removeTag(tag)} className="text-red-600">
-            ×
+          <button
+            type="button"
+            onClick={() => removeTag(tag)}
+            aria-label={`Remove tag ${tag}`}
+            className="text-red-600"
+          >
+            <span aria-hidden="true">×</span>
           </button>
         </span>
       ))}
@@ -54,6 +59,7 @@ function InputTags({ tags, tagInput, setTagInput, setForm }) {
         onChange={(e) => setTagInput(e.target.value)}
         onKeyDown={handleKeyDown}
         placeholder="Type tag then press Enter"
+        aria-label="Add a tag"
         className="outline-none flex-1 text-sm bg-transparent"
       />
     </div>

@@ -1,10 +1,14 @@
-function CategorySelect({ categories = [], value, onChange }) {
+import { fieldProps } from "../articleForm";
+
+function CategorySelect({ categories = [], value, onChange, invalid = false }) {
   return (
     <select
+      id="categoryId"
       name="categoryId"
       value={value}
       onChange={onChange}
-      className="os-input"
+      className={`os-input${invalid ? " border-red-500" : ""}`}
+      {...fieldProps("categoryId", invalid ? { categoryId: true } : {})}
     >
       <option value="">Select Category</option>
 
