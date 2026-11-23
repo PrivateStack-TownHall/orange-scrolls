@@ -32,6 +32,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
       this.logger.error(`Prisma ${exception.code}: ${exception.message}`)
 
       let message = "Database error"
+      let status: number = HttpStatus.BAD_REQUEST
 
       if (exception.code === "P2002") {
         // meta.target lists which column(s) collided. When it's the
@@ -45,23 +46,28 @@ export class HttpExceptionFilter implements ExceptionFilter {
           ? (exception.meta?.target as string[])
           : []
 
+        status = target.includes("id")
+          ? HttpStatus.INTERNAL_SERVER_ERROR
+          : HttpStatus.CONFLICT
         message = target.includes("id")
           ? "Database ID sequence is out of sync for this table — this is a server-side data issue, not something wrong with your input. See the backend logs / README for how to reset it."
           : `Duplicate value for: ${target.join(", ") || "a unique field"}`
       }
 
       if (exception.code === "P2003") {
+        status = HttpStatus.CONFLICT
         message =
           "This record can't be deleted or saved because it's still linked to other data (e.g. a category still has articles under it)."
       }
 
       if (exception.code === "P2025") {
+        status = HttpStatus.NOT_FOUND
         message = "Record not found"
       }
 
-      response.status(HttpStatus.BAD_REQUEST).json({
+      response.status(status).json({
         success: false,
-        statusCode: 400,
+        statusCode: status,
         message,
         code: exception.code,
         meta: exception.meta
@@ -88,10 +94,18 @@ export class HttpExceptionFilter implements ExceptionFilter {
         message = res.message || message
       }
 
+      const details =
+        typeof exceptionResponse === "object"
+          ? (exceptionResponse as any).details
+          : undefined
+
       response.status(status).json({
         success: false,
         statusCode: status,
-        message
+        message,
+        // Optional structured context (e.g. which articles still use a
+        // media item on a 409) — only present when a service supplies it.
+        ...(details !== undefined && { details })
       })
 
       return
