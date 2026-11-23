@@ -24,6 +24,11 @@ export default function MediaLibrary() {
   const [preview, setPreview] = useState(null);
 
   const [deleteTarget, setDeleteTarget] = useState(null);
+  const [deleting, setDeleting] = useState(false);
+
+  // Set when the API answers 409: the media is still used by articles and
+  // needs an explicit second confirmation before it is force-deleted.
+  const [inUse, setInUse] = useState(null);
 
   const [toast, setToast] = useState({
     show: false,
@@ -70,30 +75,69 @@ export default function MediaLibrary() {
     setDeleteTarget(item);
   };
 
+  const finishDelete = (message) => {
+    setToast({ show: true, type: "success", message });
+    fetchMedia();
+  };
+
   const handleDelete = async () => {
-    if (!deleteTarget) return;
+    if (!deleteTarget || deleting) return;
+
+    const target = deleteTarget;
 
     try {
-      await deleteMedia(deleteTarget.id);
+      setDeleting(true);
 
-      setToast({
-        show: true,
-        type: "success",
-        message: "Media deleted successfully",
-      });
+      await deleteMedia(target.id, { skipErrorModal: true });
 
-      fetchMedia();
+      finishDelete("Media deleted successfully");
+      setDeleteTarget(null);
     } catch (err) {
       console.error("Failed to delete media:", err);
+
+      if (err.response?.status === 409) {
+        // Still used by articles -> ask again, naming them.
+        setInUse({
+          media: target,
+          message: err.response.data?.message,
+          articles: err.response.data?.details?.articles || [],
+        });
+      } else {
+        setToast({
+          show: true,
+          type: "error",
+          message: err.response?.data?.message || "Failed to delete media",
+        });
+      }
+
+      setDeleteTarget(null);
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  // Second, explicit confirmation: detach from every article and delete.
+  const handleForceDelete = async () => {
+    if (!inUse || deleting) return;
+
+    try {
+      setDeleting(true);
+
+      await deleteMedia(inUse.media.id, { force: true, skipErrorModal: true });
+
+      finishDelete("Media deleted and removed from the articles using it");
+    } catch (err) {
+      console.error("Failed to force delete media:", err);
 
       setToast({
         show: true,
         type: "error",
-        message: "Failed to delete media",
+        message: err.response?.data?.message || "Failed to delete media",
       });
+    } finally {
+      setDeleting(false);
+      setInUse(null);
     }
-
-    setDeleteTarget(null);
   };
 
   const { query, setQuery, filteredData } = useSearch(media, ["name"]);
@@ -103,12 +147,18 @@ export default function MediaLibrary() {
       key: "preview",
       label: "Preview",
       render: (row) => (
-        <img
-          src={row.url}
-          alt={row.name}
-          className="w-16 h-12 object-cover rounded border border-[var(--os-border-soft)] cursor-pointer"
+        <button
+          type="button"
           onClick={() => setPreview(row)}
-        />
+          aria-label={`Preview ${row.name}`}
+          className="rounded"
+        >
+          <img
+            src={row.url}
+            alt=""
+            className="w-16 h-12 object-cover rounded border border-[var(--os-border-soft)] cursor-pointer"
+          />
+        </button>
       ),
     },
     {
@@ -124,9 +174,11 @@ export default function MediaLibrary() {
         // argument — so this button silently did nothing. Fixed to go
         // through the same confirm-dialog flow the grid view uses.
         <button
+          type="button"
           onClick={() => confirmDelete(row)}
           className="p-1.5 rounded border border-[var(--os-border-soft)] hover:bg-[var(--os-nav-hover)]"
-          aria-label="Delete media"
+          aria-label={`Delete ${row.name}`}
+          title="Delete media"
         >
           <img
             src="/icons/torn_scroll.png"
@@ -150,6 +202,7 @@ export default function MediaLibrary() {
         breadcrumb={[{ label: "Dashboard", path: "/" }, { label: "Media" }]}
         action={
           <button
+            type="button"
             onClick={() => setOpenUpload(true)}
             className="os-btn-primary flex items-center gap-2"
           >
@@ -192,9 +245,11 @@ export default function MediaLibrary() {
             >
               {/* DELETE ICON */}
               <button
+                type="button"
                 onClick={() => confirmDelete(item)}
-                className="absolute top-3 right-3 p-1 rounded hover:bg-[var(--os-nav-hover)] transition-colors"
-                aria-label="Delete media"
+                className="absolute top-3 right-3 p-1 rounded hover:bg-[var(--os-nav-hover)] focus-visible:bg-[var(--os-nav-hover)] transition-colors"
+                aria-label={`Delete ${item.name}`}
+                title="Delete media"
               >
                 <img
                   src="/icons/torn_scroll.png"
@@ -204,12 +259,18 @@ export default function MediaLibrary() {
               </button>
 
               {/* IMAGE */}
-              <img
-                src={item.url}
-                alt={item.name}
-                className="w-full h-32 object-cover rounded cursor-pointer"
+              <button
+                type="button"
                 onClick={() => setPreview(item)}
-              />
+                aria-label={`Preview ${item.name}`}
+                className="block w-full rounded"
+              >
+                <img
+                  src={item.url}
+                  alt=""
+                  className="w-full h-32 object-cover rounded cursor-pointer"
+                />
+              </button>
 
               {/* FILE NAME */}
               <div className="text-xs p-2 truncate">{item.name}</div>
@@ -255,8 +316,34 @@ export default function MediaLibrary() {
         message="This action cannot be undone."
         confirmText="Delete"
         cancelText="Cancel"
+        loading={deleting}
+        loadingText="Deleting..."
         onConfirm={handleDelete}
         onCancel={() => setDeleteTarget(null)}
+      />
+
+      {/* STILL IN USE -> explicit second confirmation */}
+      <ConfirmDialog
+        isOpen={!!inUse}
+        title="Media is still in use"
+        message={
+          inUse
+            ? `"${inUse.media.name}" is used by ${inUse.articles.length || "some"} article(s)${
+                inUse.articles.length
+                  ? `: ${inUse.articles
+                      .slice(0, 5)
+                      .map((a) => a.title)
+                      .join(", ")}${inUse.articles.length > 5 ? ", …" : ""}`
+                  : ""
+              }. Deleting it will remove it from those articles. This cannot be undone.`
+            : ""
+        }
+        confirmText="Delete anyway"
+        cancelText="Keep it"
+        loading={deleting}
+        loadingText="Deleting..."
+        onConfirm={handleForceDelete}
+        onCancel={() => setInUse(null)}
       />
 
       {/* TOAST */}
